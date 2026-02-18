@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum MoodTag {
+  JOY
+  PROUD
+  GRATEFUL
+  RELIEVED
+  EXCITED
+  CALM
+  CONFIDENT
+  MOTIVATED
+  CONNECTED
+  HOPEFUL
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  email        String     @unique @db.VarChar(255)
+  passwordHash String     @db.VarChar(255)
+  createdAt    DateTime   @default(now())
+
+  logs         GrowthLog[]
+
+  @@map("users")
+}
+
+model GrowthLog {
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  happenedAt DateTime  @db.DateTime(0)
+  moodTag    MoodTag
+  triggerKo  String    @db.VarChar(200)
+  praiseKo   String    @db.Text
+  praiseJa   String    @db.Text
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jaChecks   JaCheckResult[]
+
+  @@index([userId, happenedAt])
+  @@map("growth_logs")
+}
+
+model JaCheckResult {
+  id          Int      @id @default(autoincrement())
+  logId       Int
+  toolName    String   @db.VarChar(50)
+  originalText String  @db.Text
+  issuesJson  Json
+  issueCount  Int
+  createdAt   DateTime @default(now())
+
+  log         GrowthLog @relation(fields: [logId], references: [id], onDelete: Cascade)
+
+  @@index([logId, createdAt])
+  @@map("ja_check_results")
+}
