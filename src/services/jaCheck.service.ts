@@ -1,3 +1,4 @@
+import { AppError } from "../utils/AppError";
 import { prisma } from "../utils/prisma";
 
 export const jaCheckService = {
@@ -8,10 +9,7 @@ export const jaCheckService = {
     });
 
     if (!log) {
-      const e: any = new Error("로그를 찾을 수 없습니다.");
-      e.status = 404;
-      e.code = "LOG_NOT_FOUND";
-      throw e;
+      throw new AppError(404, "LOG_NOT_FOUND", "로그를 찾을 수 없습니다.");
     }
 
     const { issues, issueCount } = mockCheckJa(log.praiseJa);
@@ -39,10 +37,7 @@ export const jaCheckService = {
     });
 
     if (!log) {
-      const e: any = new Error("로그를 찾을 수 없습니다.");
-      e.status = 404;
-      e.code = "LOG_NOT_FOUND";
-      throw e;
+      throw new AppError(404, "LOG_NOT_FOUND", "로그를 찾을 수 없습니다.");
     }
 
     const latest = await prisma.jaCheckResult.findFirst({
@@ -59,6 +54,64 @@ export const jaCheckService = {
     });
 
     return { result: latest };
+  },
+
+  async listResults(userId: number, logId: number, take: number = 20) {
+    const log = await prisma.growthLog.findFirst({
+      where: { id: logId, userId },
+      select: { id: true },
+    });
+
+    if (!log) {
+      throw new AppError(404, "LOG_NOT_FOUND", "로그를 찾을 수 없습니다.");
+    }
+
+    const results = await prisma.jaCheckResult.findMany({
+      where: { logId },
+      orderBy: { createdAt: "desc" },
+      take,
+      select: {
+        id: true,
+        toolName: true,
+        issueCount: true,
+        createdAt: true,
+      },
+    });
+
+    return { results };
+  },
+
+  async getResultDetail(userId: number, resultId: number) {
+    const result = await prisma.jaCheckResult.findUnique({
+      where: { id: resultId },
+      select: {
+        id: true,
+        logId: true,
+        toolName: true,
+        originalText: true,
+        issuesJson: true,
+        issueCount: true,
+        createdAt: true,
+      },
+    });
+
+    if (!result) {
+      throw new AppError(
+        404,
+        "RESULT_NOT_FOUND",
+        "검사 결과를 찾을 수 없습니다.",
+      );
+    }
+
+    const owner = await prisma.growthLog.findFirst({
+      where: { id: result.logId, userId },
+      select: { id: true },
+    });
+
+    if (!owner) {
+      throw new AppError(404, "LOG_NOT_FOUND", "로그를 찾을 수 없습니다.");
+    }
+    return { result };
   },
 };
 

@@ -1,3 +1,4 @@
+import { AppError } from "../utils/AppError";
 import { prisma } from "../utils/prisma";
 import { CreateLogBody, UpdateLogBody } from "../validators/logs.schema";
 
@@ -64,10 +65,11 @@ export const logsService = {
       },
     });
     if (!log) {
-      const e: any = new Error("로그를 찾을 수 없습니다.");
-      e.status = 404;
-      e.code = "LOG_NOT_FOUND";
-      throw e;
+      throw new AppError(404, "LOG_NOT_FOUND", "로그를 찾을 수 없습니다.");
+      // const e: any = new Error("로그를 찾을 수 없습니다.");
+      // e.status = 404;
+      // e.code = "LOG_NOT_FOUND";
+      // throw e;
     }
 
     return { log };
@@ -80,10 +82,11 @@ export const logsService = {
     });
 
     if (!exists) {
-      const e: any = new Error("로그를 찾을 수 없습니다.");
-      e.status = 404;
-      e.code = "LOG_NOT_FOUND";
-      throw e;
+      throw new AppError(404, "LOG_NOT_FOUND", "로그를 찾을 수 없습니다.");
+      // const e: any = new Error("로그를 찾을 수 없습니다.");
+      // e.status = 404;
+      // e.code = "LOG_NOT_FOUND";
+      // throw e;
     }
 
     const log = await prisma.growthLog.update({
@@ -119,10 +122,11 @@ export const logsService = {
       },
     });
     if (!exists) {
-      const e: any = new Error("로그를 찾을 수 없습니다.");
-      e.status = 404;
-      e.code = "LOG_NOT_FOUND";
-      throw e;
+      throw new AppError(404, "LOG_NOT_FOUND", "로그를 찾을 수 없습니다.");
+      // const e: any = new Error("로그를 찾을 수 없습니다.");
+      // e.status = 404;
+      // e.code = "LOG_NOT_FOUND";
+      // throw e;
     }
 
     await prisma.growthLog.delete({ where: { id } });
