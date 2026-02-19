@@ -9,7 +9,12 @@ import {
   listLogs,
   updateLog,
 } from "../controllers/logs.controller";
-import { checkJa, getJaLatest } from "../controllers/jaCheck.controller";
+import {
+  checkJa,
+  getJaLatest,
+  getJaResultDetail,
+  listjaResults,
+} from "../controllers/jaCheck.controller";
 
 export const logsRouter = Router();
 
@@ -40,3 +45,11 @@ logsRouter.delete("/:id", authMiddleware, deleteLog);
 logsRouter.post("/:id/check-ja", authMiddleware, checkJa);
 
 logsRouter.get("/:id/check-ja/latest", authMiddleware, getJaLatest);
+
+logsRouter.get("/:id/check-ja/results", authMiddleware, listjaResults);
+
+logsRouter.get(
+  "/check-ja/results/:resultId",
+  authMiddleware,
+  getJaResultDetail,
+);
