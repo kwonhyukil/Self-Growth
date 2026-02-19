@@ -9,6 +9,7 @@ import {
   listLogs,
   updateLog,
 } from "../controllers/logs.controller";
+import { checkJa, getJaLatest } from "../controllers/jaCheck.controller";
 
 export const logsRouter = Router();
 
@@ -35,3 +36,7 @@ logsRouter.patch(
 );
 
 logsRouter.delete("/:id", authMiddleware, deleteLog);
+
+logsRouter.post("/:id/check-ja", authMiddleware, checkJa);
+
+logsRouter.get("/:id/check-ja/latest", authMiddleware, getJaLatest);
