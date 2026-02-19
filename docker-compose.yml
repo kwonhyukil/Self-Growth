@@ -24,10 +24,15 @@ services:
       PORT: 3000
       JWT_SECRET: dev_secret_change_later
       JWT_EXPIRES_IN: 3600
+      CHOKIDAR_USEPOLLING: "true"
     depends_on:
       - mysql
     ports:
       - "4000:3000"
+    volumes:
+      # 로컬 코드 변경 -> 컨테이너 내부 /app도 즉시 변경
+      - .:/app
+      - /app/node_modules
     command: sh -c "npx prisma migrate deploy && npm run dev"
 
 volumes:
