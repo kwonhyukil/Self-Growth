@@ -46,6 +46,7 @@ model GrowthLog {
 
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   jaChecks   JaCheckResult[]
+  revisions  JaRevision[]
 
   @@index([userId, happenedAt])
   @@map("growth_logs")
@@ -64,4 +65,28 @@ model JaCheckResult {
 
   @@index([logId, createdAt])
   @@map("ja_check_results")
+}
+
+model JaRevision {
+  id              Int      @id @default(autoincrement())
+
+  logId           Int
+  log             GrowthLog @relation(fields: [logId], references: [id], onDelete: Cascade)
+
+  beforeText      String   @db.Text
+  afterText       String   @db.Text
+
+  beforeResultId  Int?
+  afterResultId   Int?
+
+  beforeScore     Int?
+  afterScore      Int?
+  beforeIssueCount Int?
+  afterIssueCount  Int?
+  deltaIssueCount  Int?    // after - before (감소면 음수)
+
+  toolName        String   // "gpt:...:v1" 같이 버전 포함
+  createdAt       DateTime @default(now())
+
+  @@index([logId, createdAt])
 }
