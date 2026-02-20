@@ -9,12 +9,8 @@ import {
   listLogs,
   updateLog,
 } from "../controllers/logs.controller";
-import {
-  checkJa,
-  getJaLatest,
-  getJaResultDetail,
-  listjaResults,
-} from "../controllers/jaCheck.controller";
+import { jaCheckController } from "../controllers/jaCheck.controller";
+import { rateLimitPerUser } from "../middlewares/rateLimit.middleware";
 
 export const logsRouter = Router();
 
@@ -41,15 +37,24 @@ logsRouter.patch(
 );
 
 logsRouter.delete("/:id", authMiddleware, deleteLog);
-
-logsRouter.post("/:id/check-ja", authMiddleware, checkJa);
-
-logsRouter.get("/:id/check-ja/latest", authMiddleware, getJaLatest);
-
-logsRouter.get("/:id/check-ja/results", authMiddleware, listjaResults);
-
+logsRouter.post(
+  "/:id/check-ja",
+  authMiddleware,
+  rateLimitPerUser({ limit: 10, windowMs: 60_000 }),
+  jaCheckController.checkJa,
+);
+logsRouter.get(
+  "/:id/check-ja/latest",
+  authMiddleware,
+  jaCheckController.getJaLatest,
+);
+logsRouter.get(
+  "/:id/check-ja/results",
+  authMiddleware,
+  jaCheckController.listjaResults,
+);
 logsRouter.get(
   "/check-ja/results/:resultId",
   authMiddleware,
-  getJaResultDetail,
+  jaCheckController.getJaResultDetail,
 );
