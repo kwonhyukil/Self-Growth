@@ -53,4 +53,50 @@ export const jaCheckController = {
       next(err);
     }
   },
+  async rewriteJa(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.userId!;
+      const logId = Number(req.params.id);
+      const { revisedText } = req.body;
+
+      console.log(
+        req.body,
+        req.body?.revisedText,
+        req.body?.revisedText?.length,
+      );
+
+      const result = await jaCheckService.rewriteAndRecheck(
+        userId,
+        logId,
+        revisedText,
+      );
+      return ok(res, result, 200);
+    } catch (err) {
+      next(err);
+    }
+  },
+  async listRevisions(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.userId!;
+      const logId = Number(req.params.id);
+      const take = req.query.take ? Number(req.query.take) : 20;
+
+      const result = await jaCheckService.listRevisions(userId, logId, take);
+      return ok(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getRevisionDetail(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.userId!;
+      const revisionId = Number(req.params.revisionId);
+
+      const result = await jaCheckService.getRevisionDetail(userId, revisionId);
+      return ok(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
 };

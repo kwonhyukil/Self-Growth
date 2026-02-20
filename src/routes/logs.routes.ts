@@ -11,6 +11,7 @@ import {
 } from "../controllers/logs.controller";
 import { jaCheckController } from "../controllers/jaCheck.controller";
 import { rateLimitPerUser } from "../middlewares/rateLimit.middleware";
+import { JaRewriteSchema } from "../validators/jaRewrite";
 
 export const logsRouter = Router();
 
@@ -57,4 +58,17 @@ logsRouter.get(
   "/check-ja/results/:resultId",
   authMiddleware,
   jaCheckController.getJaResultDetail,
+);
+
+logsRouter.get(
+  "/:id/revisions",
+  authMiddleware,
+  jaCheckController.listRevisions,
+);
+
+logsRouter.post(
+  "/:id/rewrite-ja",
+  authMiddleware,
+  validateBody(JaRewriteSchema),
+  jaCheckController.rewriteJa,
 );

@@ -103,4 +103,54 @@ export const statsService = {
     }
     return { streak };
   },
+
+  async jaImprovement(userId: number, days: number = 30) {
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+
+    const revisions = await prisma.jaRevision.findMany({
+      where: {
+        createdAt: { gte: since },
+        log: { userId },
+      },
+      select: {
+        createdAt: true,
+        deltaIssueCount: true,
+      },
+    });
+
+    const totalRevisions = revisions.length;
+    const totalDeltaIssueCount = revisions.reduce(
+      (acc, r) => acc + (r.deltaIssueCount ?? 0),
+      0,
+    );
+
+    const avgDeltaIssueCount =
+      totalRevisions > 0 ? totalDeltaIssueCount / totalRevisions : 0;
+
+    const map = new Map<
+      string,
+      { deltaIssueCount: number; revisions: number }
+    >();
+
+    for (const r of revisions) {
+      const d = r.createdAt.toISOString().slice(0, 10);
+      const cur = map.get(d) ?? { deltaIssueCount: 0, revisions: 0 };
+      cur.deltaIssueCount += r.deltaIssueCount ?? 0;
+      cur.revisions += 1;
+      map.set(d, cur);
+    }
+
+    const trend = [...map.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([date, v]) => ({ date, ...v }));
+
+    return {
+      days,
+      totalRevisions,
+      totalDeltaIssueCount,
+      avgDeltaIssueCount,
+      trend,
+    };
+  },
 };
