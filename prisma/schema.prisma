@@ -89,4 +89,5 @@ model JaRevision {
   createdAt       DateTime @default(now())
 
   @@index([logId, createdAt])
+  @@map("ja_revisions")
 }
