@@ -29,6 +29,8 @@ services:
       - mysql
     ports:
       - "4000:3000"
+    env_file:
+      - .env
     volumes:
       # 로컬 코드 변경 -> 컨테이너 내부 /app도 즉시 변경
       - .:/app
