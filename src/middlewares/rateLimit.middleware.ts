@@ -22,13 +22,17 @@ export function rateLimitPerUser(options: { limit: number; windowMs: number }) {
 
     b.count += 1;
     if (b.count > limit) {
-      throw new AppError(
-        429,
-        "RATE_LIMIT_EXCEEDED",
-        "요청이 많습니다. 잠시 후 다시 시도해주세요",
+      const retryAfterMs = windowMs - (now - b.windowStart);
+      res.setHeader("Retry-After", String(Math.ceil(retryAfterMs / 1000)));
+      return next(
+        new AppError(
+          429,
+          "RATE_LIMIT_EXCEEDED",
+          `요청이 많습니다. ${Math.ceil(retryAfterMs / 1000)}초 후 다시 시도해주세요.`,
+        ),
       );
     }
 
-    next();
+    return next();
   };
 }
