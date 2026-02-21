@@ -59,11 +59,13 @@ export const jaCheckController = {
       const logId = Number(req.params.id);
       const { revisedText } = req.body;
 
-      console.log(
-        req.body,
-        req.body?.revisedText,
-        req.body?.revisedText?.length,
-      );
+      if (process.env.NODE_ENV !== "test") {
+        console.log(
+          req.body,
+          req.body?.revisedText,
+          req.body?.revisedText?.length,
+        );
+      }
 
       const result = await jaCheckService.rewriteAndRecheck(
         userId,
