@@ -3,7 +3,6 @@ import cors from "cors";
 import { router } from "./routes";
 import { errorMiddleware } from "./middlewares/error.middleware";
 import { requestLogMiddleware } from "./middlewares/requestLog.middleware";
-// import { errorMiddleware } from "./middlewares/error.middleware";
 
 export const app = express();
 
@@ -14,5 +13,3 @@ app.use(express.json());
 
 app.use("/api", router);
 app.use(errorMiddleware);
-
-// app.use(errorMiddleware);
