@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { statsController } from "../controllers/stats.controller";
+import { stat } from "node:fs";
 
 export const statsRouter = Router();
 
@@ -19,3 +20,5 @@ statsRouter.get(
   authMiddleware,
   statsController.jaImprovement,
 );
+
+statsRouter.get("/dashboard", authMiddleware, statsController.dashboard);

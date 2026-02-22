@@ -45,4 +45,13 @@ export const statsController = {
       next(err);
     }
   },
+  async dashboard(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.userId!;
+      const result = await statsService.dashboard(userId);
+      return ok(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
 };
