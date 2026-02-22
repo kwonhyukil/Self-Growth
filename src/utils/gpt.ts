@@ -109,7 +109,7 @@ export async function callGptStructuredJson<T = any>(params: {
   }
 
   const max_output_tokens = params.maxOutputTokens ?? 800;
-  const timeoutMs = params.timeoutMs ?? 2000;
+  const timeoutMs = params.timeoutMs ?? 25000;
   const retries = params.retries ?? 1;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
