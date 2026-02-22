@@ -393,6 +393,19 @@ export const jaCheckService = {
     let beforeScore: number | null = null;
     let beforeIssueCount: number | null = beforeLatest?.issueCount ?? null;
 
+    if (!beforeLatest) {
+      const base = await checkByText(userId, logId, beforeText);
+      beforeResultId = base.resultId;
+      beforeScore = Math.round(base.overall.score);
+      beforeIssueCount = base.issues.length;
+    } else if (beforeLatest?.issuesJson) {
+      const json = beforeLatest.issuesJson as any;
+      beforeScore =
+        typeof json?.overall?.score === "number"
+          ? Math.round(json.overall.score)
+          : null;
+    }
+
     if (beforeLatest?.issuesJson) {
       const json = beforeLatest.issuesJson as any;
       beforeScore =
