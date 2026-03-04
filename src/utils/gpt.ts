@@ -171,7 +171,7 @@ export async function callGptStructuredJson<T = any>(params: {
         throw new AppError(
           502,
           "JA_CHECK_BAD_UPSTREAM",
-          "검사 읍답에서 텍스트를 추출하지 못했습니다.",
+          "검사 응답에서 텍스트를 추출하지 못했습니다.",
         );
       }
 

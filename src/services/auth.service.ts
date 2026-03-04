@@ -2,17 +2,7 @@ import bcrypt from "bcrypt";
 import { prisma } from "../utils/prisma";
 import { signAccessToken } from "../utils/jwt";
 import { AppError } from "../utils/AppError";
-
-type SignupInput = {
-  email: string;
-  password: string;
-  name: string;
-};
-
-type LoginInput = {
-  email: string;
-  password: string;
-};
+import { SignupInput, LoginInput } from "../validators/auth.schema";
 
 export const authService = {
   async signup(input: SignupInput) {
@@ -25,10 +15,6 @@ export const authService = {
         "EMAIL_ALREADY_EXISTS",
         "이미 사용중인 이메일입니다.",
       );
-      // const e: any = new Error("이미 사용중인 이메일입니다.");
-      // e.status = 409;
-      // e.code = "EMAIL_ALREADY_EXISTS";
-      // throw e;
     }
 
     const hashed = await bcrypt.hash(password, 10);
@@ -63,38 +49,27 @@ export const authService = {
       },
     });
 
-    // 이메일 비일치 (메시지는 똑같이)
     if (!user) {
       throw new AppError(
         401,
         "INVALID_CREDENTIALS",
         "이메일 또는 비밀번호가 올바르지 않습니다.",
       );
-      // const e: any = new Error("이메일 또는 비밀번호가 올바르지 않습니다.");
-      // e.status = 401;
-      // e.code = "INVALID_CREDENTIALS";
-      // throw e;
     }
 
     // 사용자가 입력한 비밀번호와 해시 비밀번호 확인
     const ok = await bcrypt.compare(password, user.passwordHash);
 
-    // 비밀번호 비일치 (메시지는 똑같이)
     if (!ok) {
       throw new AppError(
         401,
         "INVALID_CREDENTIALS",
         "이메일 또는 비밀번호가 올바르지 않습니다.",
       );
-      // const e: any = new Error("이메일 또는 비밀번호가 올바르지 않습니다.");
-      // e.status = 401;
-      // e.code = "INVALID_CREDENTIALS";
-      // throw e;
     }
 
     const accessToken = signAccessToken({ userId: user.id });
 
-    // passwordHash는 응답에 미포함
     const { passwordHash, ...safeUser } = user;
 
     return { user: safeUser, accessToken };
