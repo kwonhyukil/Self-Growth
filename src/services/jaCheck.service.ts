@@ -592,7 +592,7 @@ export const jaCheckService = {
       const issues = Array.isArray(feedback?.issues) ? feedback.issues : [];
       return issues.map((i: any) => ({
         issueId: i.issueId ?? null,
-        reuleTag: i.ruleTag ?? "other",
+        ruleTag: i.ruleTag ?? "other",
         severity: i.severity ?? "low",
         problem: i.problem ?? "",
         why: i.why ?? "",
