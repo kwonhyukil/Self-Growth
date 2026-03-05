@@ -5,6 +5,16 @@ import { AuthRequest } from "./auth.middleware";
 type Bucket = { windowStart: number; count: number };
 const buckets = new Map<number, Bucket>();
 
+// Purge expired buckets every 5 minutes to prevent unbounded memory growth.
+setInterval(() => {
+  const now = Date.now();
+  for (const [userId, bucket] of buckets) {
+    if (now - bucket.windowStart >= 60_000) {
+      buckets.delete(userId);
+    }
+  }
+}, 5 * 60_000).unref();
+
 export function rateLimitPerUser(options: { limit: number; windowMs: number }) {
   const { limit, windowMs } = options;
 
