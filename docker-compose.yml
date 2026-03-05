@@ -6,7 +6,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: self_growth_log
-      TZ: UTC
+      TZ: Asia/Seoul
     ports:
       - "3306:3306"
     volumes:

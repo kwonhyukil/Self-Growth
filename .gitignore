@@ -23,3 +23,7 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Claude Code internal directories
+.claude/
+.claire/
