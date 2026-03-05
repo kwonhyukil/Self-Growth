@@ -1,0 +1,61 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Monorepo: Self Growth Log — Backend Services
+#
+# Run from the backend/ directory:
+#   docker-compose up
+#
+# Run from the project root:
+#   docker-compose -f backend/docker-compose.yml up
+#
+# Directory layout (relative to project root):
+#   ./backend/   ← this file lives here; build context for the API container
+#   ./frontend/  ← served separately (e.g. `npm run dev` inside frontend/)
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: self-growth-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: self_growth_log
+      TZ: Asia/Seoul
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+
+  api:
+    build:
+      # Build context = ./backend/ (the directory that contains this compose file
+      # as well as the Dockerfile, src/, prisma/, package.json, etc.)
+      context: .
+      dockerfile: Dockerfile
+    container_name: self-growth-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: mysql://root:rootpassword@mysql:3306/self_growth_log?charset=utf8mb4
+      PORT: 3000
+      JWT_SECRET: dev_secret_change_later
+      JWT_EXPIRES_IN: 3600
+      CHOKIDAR_USEPOLLING: "true"
+    depends_on:
+      - mysql
+    ports:
+      - "4000:3000"
+    env_file:
+      # Place your backend .env file at ./backend/.env
+      - .env
+    volumes:
+      # Mount ./backend/ as /app so live-reload picks up source changes
+      - .:/app
+      # Keep the container-internal node_modules isolated from the host
+      - /app/node_modules
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+
+volumes:
+  mysql_data:
