@@ -3,6 +3,11 @@
 # backend/.gitignore and frontend/.gitignore.
 # This file covers root-level and cross-cutting concerns.
 
+# Environment variables (never commit secrets)
+.env
+.env.*
+!.env.example
+
 # Safety net: never commit node_modules or build artefacts from any package
 node_modules/
 dist/

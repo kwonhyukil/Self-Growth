@@ -1,119 +1,44 @@
-# Frontend — Self Growth Log
+# Frontend CLAUDE.md
 
-> React 18 + TypeScript + Vite + Tailwind CSS coaching dashboard.
+## Overview
 
----
-
-## Monorepo Location
-
-```
-<project-root>/
-├── backend/
-└── frontend/  ← you are here
-```
-
----
-
-## Quick Start
-
-```bash
-# From frontend/
-npm install
-npm run dev     # Vite dev server → http://localhost:3000
-                # /api requests are proxied to http://localhost:4000
-```
-
-> The backend must be running on port 4000 for API calls to work.
-> See `../backend/CLAUDE.md` for backend setup.
-
----
+React 18 + TypeScript + Vite frontend for Self Growth Log.
 
 ## Directory Structure
 
-```
-frontend/
-├── src/
-│   ├── App.tsx                 Root component, React Router, QueryClient
-│   ├── main.tsx                Entry point
-│   ├── index.css               Tailwind base + custom scrollbar
-│   ├── types/
-│   │   └── index.ts            TypeScript types (mirrors Prisma schema + Zod validators)
-│   ├── api/
-│   │   ├── client.ts           Axios instance (JWT interceptor, AppError mapping)
-│   │   ├── auth.ts             /auth endpoints
-│   │   ├── logs.ts             /logs CRUD
-│   │   ├── jaCheck.ts          /check-ja, /rewrite-ja, /revisions
-│   │   └── stats.ts            /stats summary, dashboard, ja-improvement
-│   ├── hooks/
-│   │   ├── useAuth.ts          TanStack Query auth hooks
-│   │   ├── useLogs.ts          TanStack Query log hooks
-│   │   ├── useJaCheck.ts       TanStack Query AI feedback hooks
-│   │   └── useStats.ts         TanStack Query stats hooks
-│   ├── contexts/
-│   │   └── AuthContext.tsx     JWT persistence, login/signup/logout
-│   ├── components/
-│   │   ├── layout/             Layout, Header, Sidebar
-│   │   ├── ui/                 Button, Input, Textarea, Badge, Modal, Spinner
-│   │   ├── logs/               LogCard, LogForm
-│   │   ├── jaCheck/            JaCheckPanel, IssueCard, ScoreBadge
-│   │   ├── revision/           RewritePanel, RevisionHistory
-│   │   └── stats/              SummaryCards, MoodDistribution, TrendChart
-│   ├── pages/
-│   │   ├── AuthPage.tsx        Login / Signup
-│   │   ├── DashboardPage.tsx   Overview + coach insights
-│   │   ├── LogsPage.tsx        Growth log timeline
-│   │   ├── LogDetailPage.tsx   Record → Feedback → Rewrite loop
-│   │   └── StatsPage.tsx       Stats + JA improvement charts
-│   └── utils/
-│       ├── constants.ts        Mood/severity/rule-tag labels & colours
-│       └── formatters.ts       dayjs date helpers, score colours
-├── index.html
-├── vite.config.ts              Dev proxy: /api → localhost:4000
-├── tailwind.config.js
-├── tsconfig.app.json
-└── package.json
+```text
+frontend/src/
+  app/
+    App.tsx
+    main.tsx
+  features/
+    auth/
+    growth/
+    logs/
+      ja-check/
+      verbalization/
+    stats/
+  shared/
+    api/
+      client.impl.ts
+    ui/
+    layout/
+    lib/
+  styles/
+  types/
 ```
 
----
+## Key Paths
 
-## Tech Stack
+- App entry: `src/app/main.tsx`
+- Root app composition: `src/app/App.tsx`
+- Shared HTTP client: `src/shared/api/client.impl.ts`
+- Shared contracts re-export: `src/types/index.ts`
 
-| Concern | Library |
-|---------|---------|
-| Build | Vite 6 |
-| UI | React 18 + TypeScript |
-| Styling | Tailwind CSS 3 |
-| Server state | TanStack Query (React Query) v5 |
-| HTTP client | Axios (centralized in `src/api/client.ts`) |
-| Routing | React Router v6 |
-| Date formatting | dayjs |
+## Conventions
 
----
-
-## Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Vite dev server with HMR on port 3000 |
-| `npm run build` | TypeScript check + Vite production build → `dist/` |
-| `npm run preview` | Preview the production build locally |
-
----
-
-## Key Conventions
-
-- **JWT**: stored in `localStorage` under key `sg_access_token`; attached via Axios request interceptor
-- **Error handling**: API errors are mapped to `AppError` (typed `{code, status, message}`) in the response interceptor; cleared token on 401
-- **Type sync**: all types in `src/types/index.ts` must stay in sync with backend Prisma schema and Zod validators
-- **JA text constraints**: 20–200 characters enforced client-side in `LogForm` and `RewritePanel`
-- **Cache keys**: query keys are defined alongside their hooks; mutations invalidate related keys
-
----
-
-## TODO / Future Guidance
-
-- [ ] Add ESLint + Prettier config
-- [ ] Add unit tests (Vitest + React Testing Library)
-- [ ] Add loading skeletons for timeline view
-- [ ] Internationalisation (i18n) for Korean/Japanese UI labels
-- [ ] PWA support (offline log drafts)
+- Feature implementation files use `*.impl.ts` or `*.impl.tsx`.
+- Public feature entrypoints re-export from their local `*.impl` files.
+- Shared UI and layout are imported from `@/shared/*`.
+- Feature pages/components/hooks/api are imported from `@/features/*`.
+- Do not recreate old `src/api`, `src/hooks`, or `src/pages` wrapper layers.

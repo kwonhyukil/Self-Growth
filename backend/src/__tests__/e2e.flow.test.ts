@@ -1,4 +1,4 @@
-jest.mock("../utils/gpt", () => ({
+jest.mock("../shared/infra/gpt", () => ({
   callGptStructuredJson: async () => ({
     overall: {
       score: 85,
@@ -27,7 +27,7 @@ jest.setTimeout(30000);
 
 import request from "supertest";
 import { app } from "../app";
-import { prisma } from "../utils/prisma";
+import { prisma } from "../shared/infra/prisma";
 
 function randEmail() {
   return `test_${Date.now()}_${Math.floor(Math.random() * 1000)}@example.com`;

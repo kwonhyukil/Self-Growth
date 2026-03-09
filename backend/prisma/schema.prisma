@@ -7,6 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum DogLevel {
+  BABY
+  JUNIOR
+  SENIOR
+  MASTER
+}
+
+enum DogEmotion {
+  HAPPY
+  NEUTRAL
+  SAD
+}
+
 enum MoodTag {
   JOY
   PROUD
@@ -27,26 +40,31 @@ model User {
   passwordHash String     @db.VarChar(255)
   createdAt    DateTime   @default(now())
 
-  logs         GrowthLog[]
+  logs                  GrowthLog[]
+  growthSnapshot        UserGrowthSnapshot?
+  verbalizationSessions VerbalizationSession[]
 
   @@map("users")
 }
 
 model GrowthLog {
-  id         Int       @id @default(autoincrement())
-  userId     Int
-  happenedAt DateTime  @db.DateTime(0)
-  moodTag    MoodTag
-  triggerKo  String    @db.VarChar(200)
-  praiseKo   String    @db.Text
-  praiseJa   String    @db.Text
+  id             Int       @id @default(autoincrement())
+  userId         Int
+  happenedAt     DateTime  @db.DateTime(0)
+  moodTag        MoodTag
+  triggerKo      String    @db.VarChar(200)
+  specificEvent  String?   @db.VarChar(500)  // Step 1: 구체적 사건 (선택)
+  moodIntensity  Int?                         // Step 1: 감정 강도 1–5 (선택)
+  praiseKo       String    @db.Text
+  praiseJa       String?   @db.Text   // optional — AI draft 또는 사용자가 직접 입력
 
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  jaChecks   JaCheckResult[]
-  revisions  JaRevision[]
+  user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jaChecks            JaCheckResult[]
+  revisions           JaRevision[]
+  verbalizationSession VerbalizationSession?
 
   @@index([userId, happenedAt])
   @@map("growth_logs")
@@ -90,4 +108,69 @@ model JaRevision {
 
   @@index([logId, createdAt])
   @@map("ja_revisions")
+}
+
+// ── Growth System ──────────────────────────────────────────
+// 유저당 1개, 로그/리비전/jaCheck 저장 시마다 갱신
+model UserGrowthSnapshot {
+  id              Int        @id @default(autoincrement())
+  userId          Int        @unique
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 반려견 시스템
+  dogLevel        DogLevel   @default(BABY)
+  dogEmotion      DogEmotion @default(NEUTRAL)
+
+  // 레이더 차트 6축 (0-100)
+  vocabulary           Int        @default(0)   // 어휘 다양성
+  grammarAccuracy      Int        @default(0)   // 문법 정확도
+  consistency          Int        @default(0)   // 기록 일관성
+  positivity           Int        @default(0)   // 감정 긍정도
+  revisionEffort       Int        @default(0)   // 교정 노력
+  verbalizationClarity Int        @default(0)   // 언어화 해상도 (NEW)
+
+  // 6축 평균 (Dog 레벨과 동기화)
+  radarAvgScore   Float      @default(0)
+
+  computedAt      DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@map("user_growth_snapshots")
+}
+
+// ── Verbalization System ────────────────────────────────────
+// 로그당 1개, 3-Step 언어화 프로세스의 전체 상태를 저장
+model VerbalizationSession {
+  id                 Int       @id @default(autoincrement())
+  logId              Int       @unique
+  userId             Int
+
+  // Step 2: 3분 브레인스토밍
+  rawThoughts        String    @db.Text
+  thinkingDurationMs Int?                       // 실제 소요 시간 (ms)
+
+  // Step 2 → 3: AI 생성 탐구 질문
+  probingQuestion    String?   @db.VarChar(500)
+
+  // Step 3: 사용자 탐구 답변
+  probingAnswer      String?   @db.Text
+
+  // Step 3: AI 정제 결과
+  aiInsightJa        String?   @db.Text          // 일본어 정제 문장
+  aiInsightKo        String?   @db.Text          // 한국어 요약
+
+  // 언어화 품질 점수 (0-100, Step 3 완료 시 산출)
+  verbalizationScore Int?
+
+  // 완료된 스텝 수 (1=브레인스토밍만, 2=탐구 완료, 3=인사이트 수령)
+  completedSteps     Int       @default(1)
+
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  log                GrowthLog @relation(fields: [logId], references: [id], onDelete: Cascade)
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("verbalization_sessions")
 }

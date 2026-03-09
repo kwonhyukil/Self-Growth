@@ -1,0 +1,94 @@
+@import url('https://cdn.jsdelivr.net/npm/pretendard/dist/web/static/pretendard.css');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    font-family: 'Noto Sans JP', 'Pretendard Variable', 'Pretendard', 'Noto Sans KR', Inter, system-ui, sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-surface-canvas text-text-main text-body;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 0% 0%, rgba(79, 70, 229, 0.06), transparent 30%),
+      radial-gradient(circle at 95% 8%, rgba(232, 96, 60, 0.05), transparent 25%),
+      linear-gradient(180deg, #FBF8F3 0%, #F5EFE6 100%);
+  }
+
+  * {
+    @apply border-border-subtle;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display text-text-main;
+  }
+
+  h1 {
+    @apply text-h1;
+  }
+
+  h2 {
+    @apply text-h2;
+  }
+
+  h3 {
+    @apply text-h3;
+  }
+}
+
+@layer components {
+  .surface-card {
+    @apply rounded-card border bg-surface-elevated shadow-activity;
+  }
+
+  .activity-card {
+    @apply surface-card p-5 transition-all duration-180 ease-smooth;
+    @apply hover:-translate-y-0.5 hover:border-border-strong hover:shadow-activity-hover;
+  }
+
+  .dashboard-panel {
+    @apply surface-card p-6;
+  }
+
+  .section-label {
+    @apply text-caption font-semibold uppercase tracking-[0.14em] text-text-soft;
+  }
+
+  .field-label {
+    @apply text-bodySm font-medium text-text-main;
+  }
+
+  .progress-rail {
+    @apply h-2 overflow-hidden rounded-pill bg-neutral-100;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-pill transition-all duration-240 ease-smooth;
+  }
+}
+
+@layer utilities {
+  .typography-ko {
+    line-height: 1.68;
+    letter-spacing: -0.014em;
+  }
+
+  .typography-jp {
+    line-height: 1.76;
+    letter-spacing: -0.022em;
+  }
+}

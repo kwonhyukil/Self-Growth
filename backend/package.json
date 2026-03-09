@@ -1,5 +1,5 @@
 {
-  "name": "self-growth-log",
+  "name": "@self-growth/api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -27,7 +27,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "prisma:test:reset": "cross-env DOTENV_CONFIG_PATH=.env.test npx prisma migrate reset --force",
-    "test": "npm run prisma:test:reset && cross-env NODE_ENV=test DOTENV_CONFIG_PATH=.env.test node -r dotenv/config node_modules/jest/bin/jest.js --runInBand"
+    "test": "npm run prisma:test:reset && cross-env NODE_ENV=test DOTENV_CONFIG_PATH=.env.test npx jest --runInBand"
   },
   "keywords": [],
   "author": "",

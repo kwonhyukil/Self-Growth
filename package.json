@@ -1,0 +1,14 @@
+{
+  "name": "self-growth-workspace",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace @self-growth/api && npm run build --workspace @self-growth/web",
+    "test": "npm run test --workspace @self-growth/api",
+    "typecheck": "npm run build --workspace @self-growth/api && npm run build --workspace @self-growth/web"
+  }
+}
