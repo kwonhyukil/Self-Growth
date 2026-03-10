@@ -1,0 +1,104 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Self Growth Log — Development Compose
+#
+# Starts MySQL + backend (ts-node-dev hot-reload) + frontend (Vite HMR)
+#
+#   docker compose up             # foreground
+#   docker compose up -d          # detached
+#   docker compose logs -f        # tail all logs
+#   docker compose down -v        # stop + remove volumes
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Database ────────────────────────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: self-growth-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE:      ${DB_NAME:-self_growth_log}
+      TZ: Asia/Seoul
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost",
+             "-uroot", "-p${DB_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout:  5s
+      retries:  5
+      start_period: 30s
+
+  # ── Backend API (Express + Prisma, hot-reload) ───────────────────────────────
+  backend:
+    build:
+      context:    .
+      dockerfile: backend/Dockerfile
+      target:     development
+    container_name: self-growth-api
+    restart: unless-stopped
+    env_file:
+      # Loads GPT_API_KEY, JWT_SECRET, etc. from backend/.env when present
+      - path: backend/.env
+        required: false
+    environment:
+      DATABASE_URL: >-
+        mysql://root:${DB_ROOT_PASSWORD:-rootpassword}@db:3306/${DB_NAME:-self_growth_log}?charset=utf8mb4
+      PORT:     4000
+      NODE_ENV: development
+      # File-watching: required for hot-reload inside Docker on Windows/macOS
+      CHOKIDAR_USEPOLLING: "true"
+    # Port 4000 is not published to the host.
+    # Access the API through Nginx at http://localhost/api/
+    volumes:
+      # Bind only src/ dirs — preserves node_modules installed at build time
+      - ./backend/src:/app/backend/src
+      - ./packages:/app/packages
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ── Frontend (React + Vite HMR) ──────────────────────────────────────────────
+  frontend:
+    build:
+      context:    .
+      dockerfile: frontend/Dockerfile
+      target:     development
+    container_name: self-growth-web
+    restart: unless-stopped
+    environment:
+      PORT:     5174
+      NODE_ENV: development
+      # Redirect Vite's /api proxy to the backend container (not localhost)
+      VITE_API_PROXY_TARGET: http://backend:4000
+      # File-watching: required on Windows/macOS hosts
+      CHOKIDAR_USEPOLLING: "true"
+    # Port 5174 is not published to the host.
+    # Access the app through Nginx at http://localhost/
+    volumes:
+      - ./frontend/src:/app/frontend/src
+      - ./packages:/app/packages
+    depends_on:
+      - backend
+
+  # ── Nginx reverse proxy (single HTTP entry point on port 80) ────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: self-growth-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend/nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  mysql_data:

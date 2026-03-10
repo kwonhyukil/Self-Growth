@@ -1,0 +1,53 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Self Growth Log — Production Compose Override
+#
+# Merges on top of docker-compose.yml to produce a production-ready stack.
+# All secret values MUST be set in the environment or a .env file — never
+# commit real credentials to source control.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Database (production hardening) ─────────────────────────────────────────
+  db:
+    restart: always
+    # Remove host port exposure — only backend can reach the DB via the
+    # internal Docker network
+    ports: []
+
+  # ── Backend API (compiled Node.js, no source mounts) ────────────────────────
+  backend:
+    build:
+      target: production
+    restart: always
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: >-
+        mysql://root:${DB_ROOT_PASSWORD}@db:3306/${DB_NAME}?charset=utf8mb4
+      # CHOKIDAR_USEPOLLING not needed in production
+      CHOKIDAR_USEPOLLING: "false"
+    # No bind-mount volumes in production
+    volumes: []
+
+  # ── Frontend (Nginx serving Vite build) ──────────────────────────────────────
+  # Suppress the dev-only nginx reverse proxy service.
+  # In production the frontend container itself runs Nginx (production stage).
+  nginx:
+    profiles:
+      - dev-only
+
+  frontend:
+    build:
+      target: production
+    restart: always
+    environment:
+      NODE_ENV: production
+    ports:
+      - "80:80"
+    # No bind-mount volumes in production
+    volumes: []
+    depends_on:
+      - backend

@@ -12,13 +12,31 @@ Self Growth Log는 일본어 학습과 자기 성찰을 연결해, 기록 -> 언
 - npm 10+
 - Docker Desktop 또는 로컬 MySQL 8
 
-### 필수 환경 변수
+### 환경 파일 구성
 
-백엔드는 `backend/.env`를 기준으로 동작합니다.
+이 프로젝트는 환경 파일을 두 개로 나눠 씁니다.
+
+- 루트 `.env`: Docker Compose 변수용
+- `backend/.env`: 백엔드 런타임 변수용
+
+### 1. 루트 `.env` 생성
+
+루트 `.env.example`을 복사해서 프로젝트 루트에 `.env`를 만듭니다.
+
+```env
+DB_ROOT_PASSWORD=rootpassword
+DB_NAME=self_growth_log
+```
+
+이 파일은 `docker compose`가 `db`, `backend` 컨테이너의 DB 관련 값을 조립할 때 사용합니다.
+
+### 2. `backend/.env` 생성
+
+`backend/.env.example`을 복사해서 `backend/.env`를 만듭니다.
 
 | Key              | 설명                             |
 | ---------------- | -------------------------------- |
-| `DATABASE_URL`   | MySQL 연결 문자열                |
+| `DATABASE_URL`   | 로컬 백엔드 실행용 MySQL 연결 문자열 |
 | `JWT_SECRET`     | JWT 서명 키                      |
 | `JWT_EXPIRES_IN` | JWT 만료 시간(초)                |
 | `PORT`           | 백엔드 포트, 기본값 `4000`       |
@@ -38,14 +56,35 @@ GPT_API_KEY=your_api_key
 
 ### 개발 실행 순서
 
+PowerShell:
+
+```powershell
+npm install
+Copy-Item .env.example .env
+Copy-Item backend/.env.example backend/.env
+docker compose up -d
+```
+
+Bash:
+
 ```bash
 npm install
-docker compose -f backend/docker-compose.yml up -d mysql
+cp .env.example .env
+cp backend/.env.example backend/.env
+docker compose up -d
+```
+
+개발용 Docker Compose는 Nginx를 단일 진입점으로 사용합니다.
+
+- 앱: `http://localhost/`
+- API: `http://localhost/api/`
+
+백엔드와 프론트를 로컬 프로세스로 따로 띄우고 싶다면 아래 명령도 사용할 수 있습니다.
+
+```bash
 npm run dev --workspace @self-growth/api
 npm run dev --workspace @self-growth/web
 ```
-
-프론트 개발 서버는 `http://localhost:5174`, 백엔드는 `http://localhost:4000`에서 실행되며, 프론트의 `/api` 요청은 백엔드로 프록시됩니다.
 
 ---
 
