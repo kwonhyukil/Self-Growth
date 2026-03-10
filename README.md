@@ -4,6 +4,82 @@ Self Growth Log는 일본어 학습과 자기 성찰을 연결해, 기록 -> 언
 
 ---
 
+## 빠른 시작
+
+### 실행 환경
+
+- Node.js 20+
+- npm 10+
+- Docker Desktop 또는 로컬 MySQL 8
+
+### 필수 환경 변수
+
+백엔드는 `backend/.env`를 기준으로 동작합니다.
+
+| Key              | 설명                             |
+| ---------------- | -------------------------------- |
+| `DATABASE_URL`   | MySQL 연결 문자열                |
+| `JWT_SECRET`     | JWT 서명 키                      |
+| `JWT_EXPIRES_IN` | JWT 만료 시간(초)                |
+| `PORT`           | 백엔드 포트, 기본값 `4000`       |
+| `GPT_MODEL`      | JaCheck / 언어화에 사용하는 모델 |
+| `GPT_API_KEY`    | OpenAI API 키                    |
+
+예시:
+
+```env
+DATABASE_URL=mysql://root:rootpassword@localhost:3306/self_growth_log?charset=utf8mb4
+JWT_SECRET=dev_secret_change_later
+JWT_EXPIRES_IN=3600
+PORT=4000
+GPT_MODEL=gpt-4.1-mini
+GPT_API_KEY=your_api_key
+```
+
+### 개발 실행 순서
+
+```bash
+npm install
+docker compose -f backend/docker-compose.yml up -d mysql
+npm run dev --workspace @self-growth/api
+npm run dev --workspace @self-growth/web
+```
+
+프론트 개발 서버는 `http://localhost:5174`, 백엔드는 `http://localhost:4000`에서 실행되며, 프론트의 `/api` 요청은 백엔드로 프록시됩니다.
+
+---
+
+## 기술 스택
+
+### Frontend
+
+<img alt="React" src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
+<img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
+<img alt="Vite" src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
+<img alt="React Router" src="https://img.shields.io/badge/React%20Router-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white" />
+<img alt="TanStack Query" src="https://img.shields.io/badge/TanStack%20Query-FF4154?style=for-the-badge&logo=reactquery&logoColor=white" />
+<img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" />
+
+### Backend
+
+<img alt="Node.js" src="https://img.shields.io/badge/Node%20JS-5FA04E?style=for-the-badge&logo=nodedotjs&logoColor=white" />
+<img alt="Express" src="https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white" />
+<img alt="Prisma" src="https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white" />
+<img alt="Jest" src="https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white" />
+<img alt="Supertest" src="https://img.shields.io/badge/Supertest-222222?style=for-the-badge" />
+<img alt="Zod" src="https://img.shields.io/badge/Zod-3E67B1?style=for-the-badge&logo=zod&logoColor=white" />
+<img alt="JWT" src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" />
+
+### Database / Infra
+
+<img alt="MySQL" src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" />
+<img alt="Docker Compose" src="https://img.shields.io/badge/Docker%20Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
+<img alt="npm Workspaces" src="https://img.shields.io/badge/npm%20Workspaces-CB3837?style=for-the-badge&logo=npm&logoColor=white" />
+
+공통 타입 계약은 `packages/contracts`에서 관리합니다.
+
+---
+
 ## 1. 프로젝트 한 줄 소개
 
 감정과 경험을 단순히 남기는 데서 끝나지 않고, 그 경험을 일본어로 표현하고 다시 교정하는 과정을 통해 언어 실력과 자기 이해를 함께 키우는 성장형 기록 플랫폼입니다.
@@ -92,7 +168,7 @@ flowchart TD
 
 ## 5. 주요 화면
 
-현재 저장소에는 README에 직접 삽입할 스크린샷 자산이 포함되어 있지 않습니다. 대신 문서 기준으로 유지해야 할 대표 화면을 정리합니다.
+현재 저장소에는 README에 직접 삽입할 실제 스크린샷 파일이 아직 없습니다. 아래 목록은 문서 기준으로 유지할 대표 화면과, 나중에 스크린샷을 추가할 때 사용할 권장 경로입니다.
 
 ### 권장 화면 목록
 
@@ -103,6 +179,8 @@ flowchart TD
 - 통계 화면: JA improvement, 규칙별 분포, 분위기 분포
 
 ### 추천 스크린샷 경로
+
+아래 경로는 "현재 존재하는 파일"이 아니라 "추가 시 사용할 권장 위치"입니다.
 
 - `docs/screenshots/auth.png`
 - `docs/screenshots/dashboard.png`
@@ -184,12 +262,14 @@ Self-Growth/
 
 ## 8. DB 스키마 핵심만
 
-핵심 모델은 아래 4개입니다.
+사용자 경험 기준 핵심 모델은 아래 4개입니다.
 
 - `User`: 사용자 계정
 - `GrowthLog`: 감정/사건/자기표현 기록
 - `VerbalizationSession`: 3-Step 언어화 세션
 - `UserGrowthSnapshot`: 성장 요약 지표
+
+구현 레벨에서는 여기에 `JaCheckResult`, `JaRevision`이 추가되어 교정 결과와 revision 히스토리를 저장합니다.
 
 ```mermaid
 erDiagram
@@ -274,6 +354,12 @@ docker compose -f backend/docker-compose.yml up -d mysql
 npm test --workspace @self-growth/api
 ```
 
+### 테스트 전제조건
+
+- 테스트는 로컬 MySQL이 먼저 실행 중이어야 합니다.
+- 백엔드 테스트는 DB reset을 수행하므로, 테스트 실행 전에 `backend/.env`의 `DATABASE_URL`이 실제 로컬 개발 DB와 맞아야 합니다.
+- 현재 저장소에는 `backend/.env.test` 예제 파일이 포함되어 있지 않습니다. 테스트 DB를 분리하려면 별도 환경 파일과 스크립트 정리가 추가로 필요합니다.
+
 ---
 
 ## 11. 트러블슈팅 / 어려웠던 점
@@ -308,31 +394,41 @@ npm test --workspace @self-growth/api
 
 ## 실행 가이드
 
-### 설치
+### 1. 의존성 설치
 
 ```bash
 npm install
 ```
 
-### 프론트 개발 서버
-
-```bash
-npm run dev --workspace @self-growth/web
-```
-
-### 백엔드 개발 서버
-
-```bash
-npm run dev --workspace @self-growth/api
-```
-
-### Docker MySQL
+### 2. MySQL 실행
 
 ```bash
 docker compose -f backend/docker-compose.yml up -d mysql
 ```
 
-### 백엔드 테스트
+### 3. 백엔드 개발 서버
+
+```bash
+npm run dev --workspace @self-growth/api
+```
+
+기본 포트는 `4000`입니다.
+
+### 4. 프론트 개발 서버
+
+```bash
+npm run dev --workspace @self-growth/web
+```
+
+기본 포트는 `5174`이며 `/api`는 `http://localhost:4000`으로 프록시됩니다.
+
+### 5. 전체 빌드
+
+```bash
+npm run build
+```
+
+### 6. 백엔드 테스트
 
 ```bash
 npm test --workspace @self-growth/api
