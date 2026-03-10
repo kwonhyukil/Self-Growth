@@ -48,6 +48,12 @@ const GRAMMAR_TAGS = new Set([
   "politeness",
 ]);
 
+function getIssues(feedback: unknown): Array<{ ruleTag?: string }> {
+  const issues = (feedback as { issues?: Array<{ ruleTag?: string }> } | null)
+    ?.issues;
+  return Array.isArray(issues) ? issues : [];
+}
+
 // ── 헬퍼 함수 ────────────────────────────────────────────────
 
 function computeStreak(dates: Date[]): number {
@@ -219,8 +225,7 @@ export const growthService = {
     // 문법 이슈만 필터 (issuesJson이 배열인 경우)
     let totalGrammarIssues = 0;
     for (const check of allChecks) {
-      const issues = check.issuesJson as Array<{ ruleTag?: string }>;
-      if (!Array.isArray(issues)) continue;
+      const issues = getIssues(check.issuesJson);
       totalGrammarIssues += issues.filter(
         (i) => i?.ruleTag && GRAMMAR_TAGS.has(i.ruleTag)
       ).length;

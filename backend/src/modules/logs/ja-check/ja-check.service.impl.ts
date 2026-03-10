@@ -3,6 +3,7 @@ import { prisma } from "../../../shared/infra/prisma";
 import { callGptStructuredJson } from "../../../shared/infra/gpt";
 import { JA_CHECK, buildToolName } from "../../../shared/config/ja-check.config";
 import { JaCheckResultSchema, JaCheckResult } from "./ja-check.schema";
+import { growthService } from "../../stats/growth/growth.service";
 
 const responseSchema = {
   type: "object",
@@ -281,7 +282,9 @@ export const jaCheckService = {
       throw new AppError(404, "LOG_NOT_FOUND", "로그를 찾을 수 없습니다.");
     }
 
-    return checkByText(userId, logId, log.praiseJa ?? "");
+    const result = await checkByText(userId, logId, log.praiseJa ?? "");
+    await growthService.refreshSnapshot(userId);
+    return result;
   },
 
   async latest(userId: number, logId: number) {
@@ -448,6 +451,8 @@ export const jaCheckService = {
       where: { id: logId },
       data: { praiseJa: afterText },
     });
+
+    await growthService.refreshSnapshot(userId);
 
     return {
       revisionId: revision.id,

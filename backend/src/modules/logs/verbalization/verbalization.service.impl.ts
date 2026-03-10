@@ -205,14 +205,8 @@ ${probingAnswer}
     });
 
     // growth snapshot 비동기 갱신
-    setImmediate(async () => {
-      try {
-        const { growthService } = await import("../../stats/growth/growth.service");
-        await growthService.refreshSnapshot(userId);
-      } catch {
-        // non-critical
-      }
-    });
+    const { growthService } = await import("../../stats/growth/growth.service");
+    await growthService.refreshSnapshot(userId);
 
     return {
       sessionId: updated.id,

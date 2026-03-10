@@ -10,14 +10,25 @@ jest.mock("../shared/infra/gpt", () => ({
     issues: [
       {
         issueId: "mock-1",
-        ruleTag: "naturalness",
-        severity: "low",
-        problem: "mock problem",
+        ruleTag: "particle",
+        severity: "medium",
+        problem: "mock particle problem",
         why: "mock why",
         selfCheckQuestion: "mock self check",
         rewriteTask: "mock rewrite task",
         exampleFixes: [],
-        span: { start: 0, end: 0 },
+        span: { start: 0, end: 2 },
+      },
+      {
+        issueId: "mock-2",
+        ruleTag: "naturalness",
+        severity: "low",
+        problem: "mock naturalness problem",
+        why: "mock why",
+        selfCheckQuestion: "mock self check",
+        rewriteTask: "mock rewrite task",
+        exampleFixes: [],
+        span: { start: 3, end: 5 },
       },
     ],
   }),
@@ -33,9 +44,8 @@ function randEmail() {
   return `test_${Date.now()}_${Math.floor(Math.random() * 1000)}@example.com`;
 }
 
-describe("E2E Flow: signup -> login -> log -> check -> rewrite -> revision -> stats", () => {
-  it("should run the whole flow", async () => {
-    // 1) signup
+describe("E2E Flow: auth, logs, ja-check, growth", () => {
+  it("keeps auth user info and refreshes growth-derived data", async () => {
     const email = randEmail();
     const password = "Passw0rd!123";
     const name = "e2e-user";
@@ -45,7 +55,6 @@ describe("E2E Flow: signup -> login -> log -> check -> rewrite -> revision -> st
       .send({ email, password, name })
       .expect(201);
 
-    // 2) login
     const loginRes = await request(app)
       .post("/api/auth/login")
       .send({ email, password })
@@ -56,24 +65,38 @@ describe("E2E Flow: signup -> login -> log -> check -> rewrite -> revision -> st
 
     const auth = { Authorization: `Bearer ${token}` };
 
-    // 3) create log
+    const meRes = await request(app).get("/api/auth/me").set(auth).expect(200);
+    expect(meRes.body?.data?.user).toMatchObject({ email, name });
+
     const createRes = await request(app)
       .post("/api/logs")
       .set(auth)
       .send({
         happenedAt: new Date().toISOString(),
         moodTag: "CONFIDENT",
-        triggerKo: "발표 준비",
-        praiseKo: "자료를 끝까지 정리해서 뿌듯했다.",
-        praiseJa:
-          "きょうは発表資料を最後まで整理して、練習もしたので自信がついた。",
+        triggerKo: "발표 준비를 마쳤다.",
+        praiseKo: "끝까지 집중해서 준비를 마무리했다.",
+        praiseJa: "最後まで集中して準備をやり切ったので、発表にも自信を持てた。",
       })
       .expect(201);
 
     const logId = createRes.body?.data?.log?.id;
     expect(typeof logId).toBe("number");
 
-    // 4) check-ja
+    const updateRes = await request(app)
+      .patch(`/api/logs/${logId}`)
+      .set(auth)
+      .send({ moodTag: "CALM" })
+      .expect(200);
+    expect(updateRes.body?.data?.log?.moodTag).toBe("CALM");
+
+    const growthAfterUpdate = await request(app)
+      .get("/api/stats/growth")
+      .set(auth)
+      .expect(200);
+
+    expect(growthAfterUpdate.body?.data?.growth?.positivity).toBe(50);
+
     const checkRes = await request(app)
       .post(`/api/logs/${logId}/check-ja`)
       .set(auth)
@@ -82,20 +105,24 @@ describe("E2E Flow: signup -> login -> log -> check -> rewrite -> revision -> st
 
     expect(checkRes.body?.data?.mode).toBeDefined();
 
-    // 5) rewrite-ja (수정 + 재검사 + revision 생성)
+    const growthAfterCheck = await request(app)
+      .get("/api/stats/growth")
+      .set(auth)
+      .expect(200);
+
+    expect(growthAfterCheck.body?.data?.growth?.grammarAccuracy).toBe(75);
+
     const rewriteRes = await request(app)
       .post(`/api/logs/${logId}/rewrite-ja`)
       .set(auth)
       .send({
-        revisedText:
-          "きょうは発表資料を最後まで整理し、発表練習もしたので、少し自信がつきました。",
+        revisedText: "最後まで集中して準備をやり切れたので自信がついた。",
       })
       .expect(200);
 
     const revisionId = rewriteRes.body?.data?.revisionId;
     expect(typeof revisionId).toBe("number");
 
-    // 6) revision detail
     const revDetailRes = await request(app)
       .get(`/api/revisions/${revisionId}`)
       .set(auth)
@@ -104,7 +131,13 @@ describe("E2E Flow: signup -> login -> log -> check -> rewrite -> revision -> st
     expect(revDetailRes.body?.data?.revision).toBeDefined();
     expect(revDetailRes.body?.data?.revision?.after?.feedback).toBeDefined();
 
-    // 7) stats ja improvement
+    const growthAfterRewrite = await request(app)
+      .get("/api/stats/growth")
+      .set(auth)
+      .expect(200);
+
+    expect(growthAfterRewrite.body?.data?.growth?.revisionEffort).toBeGreaterThan(0);
+
     const statsRes = await request(app)
       .get("/api/stats/ja-improvement?days=30")
       .set(auth)
@@ -113,6 +146,7 @@ describe("E2E Flow: signup -> login -> log -> check -> rewrite -> revision -> st
     expect(statsRes.body?.data).toBeDefined();
   });
 });
+
 afterAll(async () => {
   await prisma.$disconnect();
 });

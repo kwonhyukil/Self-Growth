@@ -31,6 +31,7 @@ export function useRunJaCheck(logId: number) {
       qc.invalidateQueries({ queryKey: jaLatestKey(logId) })
       qc.invalidateQueries({ queryKey: jaResultsKey(logId) })
       qc.invalidateQueries({ queryKey: ['stats'] })
+      qc.invalidateQueries({ queryKey: ['growth'] })
     },
   })
 }
@@ -61,6 +62,7 @@ export function useRewriteJa(logId: number) {
       qc.invalidateQueries({ queryKey: jaRevKey(logId) })
       qc.invalidateQueries({ queryKey: jaRevDetailKey(data.revisionId) })
       qc.invalidateQueries({ queryKey: ['stats'] })
+      qc.invalidateQueries({ queryKey: ['growth'] })
     },
   })
 }

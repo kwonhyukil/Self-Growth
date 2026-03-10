@@ -12,9 +12,8 @@ export const authApi = {
     return res.data.data
   },
 
-  /** Lightweight auth check — returns userId */
-  me: async (): Promise<{ userId: number }> => {
-    const res = await api.get<{ data: { message: string; userId: number } }>('/logs/me')
-    return { userId: res.data.data.userId }
+  me: async (): Promise<{ user: User }> => {
+    const res = await api.get<{ data: { user: User } }>('/auth/me')
+    return res.data.data
   },
 }

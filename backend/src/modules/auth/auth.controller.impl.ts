@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ok } from "../../shared/http/response";
 import { authService } from "./auth.service";
+import { AuthRequest } from "../../shared/http/auth.middleware";
 
 export async function signup(req: Request, res: Response, next: NextFunction) {
   try {
@@ -14,6 +15,15 @@ export async function signup(req: Request, res: Response, next: NextFunction) {
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
     const result = await authService.login(req.body);
+    return ok(res, result, 200);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function me(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const result = await authService.me(req.userId!);
     return ok(res, result, 200);
   } catch (err) {
     next(err);

@@ -29,6 +29,7 @@ export function useCreateLog() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: LOGS_KEY })
       qc.invalidateQueries({ queryKey: ['stats'] })
+      qc.invalidateQueries({ queryKey: ['growth'] })
     },
   })
 }
@@ -40,6 +41,8 @@ export function useUpdateLog(id: number) {
     onSuccess: (updated) => {
       qc.setQueryData(logKey(id), updated)
       qc.invalidateQueries({ queryKey: LOGS_KEY })
+      qc.invalidateQueries({ queryKey: ['stats'] })
+      qc.invalidateQueries({ queryKey: ['growth'] })
     },
   })
 }
@@ -51,6 +54,7 @@ export function useDeleteLog() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: LOGS_KEY })
       qc.invalidateQueries({ queryKey: ['stats'] })
+      qc.invalidateQueries({ queryKey: ['growth'] })
     },
   })
 }

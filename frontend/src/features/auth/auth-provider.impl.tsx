@@ -19,23 +19,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const qc = useQueryClient()
 
-  // Rehydrate session from stored token
   useEffect(() => {
     const token = getToken()
     if (!token) {
       setIsLoading(false)
       return
     }
+
     authApi
       .me()
-      .then(() => {
-        // Token valid — fetch minimal user info via login check is unavailable,
-        // so we decode basic info from token-based endpoint.
-        // We rely on the token being present; user data will be refreshed on login.
+      .then(({ user }) => {
+        setUser(user)
         setIsLoading(false)
       })
       .catch(() => {
         clearToken()
+        setUser(null)
         setIsLoading(false)
       })
   }, [])
@@ -48,7 +47,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (email: string, password: string, name: string) => {
     await authApi.signup({ email, password, name })
-    // Auto-login after signup
     await login(email, password)
   }
 

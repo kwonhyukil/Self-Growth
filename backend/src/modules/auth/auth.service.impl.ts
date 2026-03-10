@@ -4,6 +4,13 @@ import { signAccessToken } from "../../shared/infra/jwt";
 import { AppError } from "../../shared/errors/AppError";
 import { SignupInput, LoginInput } from "./auth.schema";
 
+const safeUserSelect = {
+  id: true,
+  email: true,
+  name: true,
+  createdAt: true,
+} as const;
+
 export const authService = {
   async signup(input: SignupInput) {
     const { email, password, name } = input;
@@ -25,12 +32,7 @@ export const authService = {
         email,
         passwordHash: hashed,
       },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-      },
+      select: safeUserSelect,
     });
 
     return { user };
@@ -73,5 +75,17 @@ export const authService = {
     const { passwordHash, ...safeUser } = user;
 
     return { user: safeUser, accessToken };
+  },
+  async me(userId: number) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: safeUserSelect,
+    });
+
+    if (!user) {
+      throw new AppError(404, "USER_NOT_FOUND", "사용자를 찾을 수 없습니다.");
+    }
+
+    return { user };
   },
 };
