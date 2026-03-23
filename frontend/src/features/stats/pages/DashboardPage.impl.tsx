@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useSummary, useDashboard } from '@/features/stats/queries'
+import { CoachChatPanel } from '@/features/ai/chat/components/CoachChatPanel'
 import { useLogs } from '@/features/logs/queries'
 import { useAuthContext } from '@/features/auth/auth-provider'
 import { StatCard } from '@/features/stats/components/SummaryCards'
@@ -199,6 +200,10 @@ export function DashboardPage() {
               )}
 
               {/* ③ 최근 로그 — KPI 카드 위로 이동 */}
+              <Section title="AI Coach">
+                <CoachChatPanel />
+              </Section>
+
               {logs && logs.length > 0 && (
                 <Section title="最近のログ">
                   <div className="space-y-3">
