@@ -21,64 +21,87 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
-/** 온보딩 — 첫 방문자 (0 logs) */
+function AgentCard({
+  eyebrow,
+  title,
+  description,
+  action,
+  children,
+}: {
+  eyebrow: string
+  title: string
+  description: string
+  action?: React.ReactNode
+  children?: React.ReactNode
+}) {
+  return (
+    <div className="rounded-2xl border border-border-subtle bg-surface-subtle p-5">
+      <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-text-disabled">
+        {eyebrow}
+      </p>
+      <h3 className="text-base font-semibold text-text-main">{title}</h3>
+      <p className="mt-1 text-sm leading-relaxed text-text-sub">{description}</p>
+      {children ? <div className="mt-4">{children}</div> : null}
+      {action ? <div className="mt-4">{action}</div> : null}
+    </div>
+  )
+}
+
 function OnboardingCard() {
-  const ACTIONS = [
+  const actions = [
     {
-      icon: '✍️',
-      title: '今日のログを書く',
-      desc: '今日の出来事と感情を記録してみましょう',
+      icon: '📝',
+      title: '첫 로그 작성',
+      desc: '오늘 있었던 일과 내 감정을 짧게 적어 첫 기록을 시작합니다.',
       to: '/logs',
     },
     {
-      icon: '🌸',
-      title: '感情を日本語で表現',
-      desc: '自分を褒める言葉をAIと一緒に考えます',
+      icon: '🤖',
+      title: 'AI 피드백 받기',
+      desc: '일본어 문장을 적은 뒤 Feedback Agent에게 점검을 요청합니다.',
       to: '/logs',
     },
     {
-      icon: '📈',
-      title: '成長を確認する',
-      desc: '続けるほどスキルの伸びが見えてきます',
+      icon: '🧠',
+      title: 'Insight 만들기',
+      desc: '언어화 과정을 통해 생각을 더 깊게 정리하고 통찰을 남깁니다.',
       to: '/stats',
     },
   ]
 
   return (
     <div className="rounded-2xl border-2 border-dashed border-primary-200 bg-primary-50/30 p-8">
-      <div className="text-center mb-7">
-        <div className="text-4xl mb-3">🌱</div>
-        <h2 className="text-lg font-bold text-text-main">はじめまして！成長の旅を始めましょう</h2>
-        <p className="text-sm text-text-soft mt-1.5 leading-relaxed">
-          最初のログを書くと成長パートナーが生まれ、レーダーチャートが育ち始めます。
+      <div className="mb-7 text-center">
+        <div className="mb-3 text-4xl">🌱</div>
+        <h2 className="text-lg font-bold text-text-main">첫 기록부터 AI 코칭까지 한 흐름으로 시작하세요</h2>
+        <p className="mt-1.5 text-sm leading-relaxed text-text-soft">
+          이 앱은 기록, 피드백, 인사이트를 나눠서 보여주지만 사용자에게는 하나의 성장 흐름으로 이어지도록 설계되어 있습니다.
         </p>
       </div>
 
-      {/* 액션 카드 3개 */}
-      <div className="grid gap-3 sm:grid-cols-3 mb-7">
-        {ACTIONS.map((action) => (
+      <div className="mb-7 grid gap-3 sm:grid-cols-3">
+        {actions.map((action) => (
           <Link
             key={action.title}
             to={action.to}
-            className="rounded-xl bg-surface-elevated border border-border-subtle p-5 text-center shadow-soft
-                       hover:-translate-y-0.5 hover:shadow-activity transition-all duration-150 cursor-pointer group"
+            className="group rounded-xl border border-border-subtle bg-surface-elevated p-5 text-center shadow-soft transition-all duration-150 hover:-translate-y-0.5 hover:shadow-activity"
           >
             <span className="text-3xl">{action.icon}</span>
-            <p className="mt-3 text-sm font-bold text-text-main group-hover:text-primary-700 transition-colors">
+            <p className="mt-3 text-sm font-bold text-text-main transition-colors group-hover:text-primary-700">
               {action.title}
             </p>
-            <p className="mt-1.5 text-xs text-text-soft leading-relaxed">{action.desc}</p>
+            <p className="mt-1.5 text-xs leading-relaxed text-text-soft">{action.desc}</p>
           </Link>
         ))}
       </div>
 
       <div className="text-center">
         <Link to="/logs">
-          <Button leftIcon={<span>✍️</span>} size="lg" className="px-10">
-            最初のログを書く
+          <Button leftIcon={<span>📝</span>} size="lg" className="px-10">
+            첫 로그 작성하기
           </Button>
         </Link>
-        <p className="mt-2 text-xs text-text-soft">3分あれば十分です</p>
+        <p className="mt-2 text-xs text-text-soft">3분이면 시작할 수 있습니다</p>
       </div>
     </div>
   )
@@ -93,7 +116,6 @@ export function DashboardPage() {
   const isLoading = sumLoading || dashLoading
   const hasLogs = (summary?.totalLogs ?? 0) > 0
 
-  // 최빈 기분 계산
   const topMood = summary?.moodCount
     ? (Object.entries(summary.moodCount)
         .filter(([, count]) => count > 0)
@@ -101,34 +123,34 @@ export function DashboardPage() {
     : undefined
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* ── 헤더 ── */}
+    <div className="mx-auto max-w-5xl space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-text-main">
             {hasLogs
-              ? `おかえりなさい${user?.name ? `、${user.name}さん` : ''}！ 🌱`
-              : `ようこそ${user?.name ? `、${user.name}さん` : ''}！ 🌱`}
+              ? `${user?.name ? `${user.name}님, ` : ''}오늘도 성장 흐름을 이어가볼까요?`
+              : `${user?.name ? `${user.name}님, ` : ''}첫 로그부터 시작해볼까요?`}
           </h1>
-          <p className="text-sm text-text-disabled mt-0.5">
-            {hasLogs ? '今日も成長を記録しましょう' : '成長の旅を始めましょう'}
+          <p className="mt-0.5 text-sm text-text-disabled">
+            {hasLogs
+              ? 'Chat Agent, Feedback Agent, Insight Agent를 한 화면에서 이어서 사용할 수 있습니다.'
+              : '기록을 남기면 AI 코치가 다음 행동을 자연스럽게 안내해줍니다.'}
           </p>
 
-          {/* 개인화 스탯 스트립 — 로그 있을 때만 */}
           {hasLogs && summary && (
             <div className="mt-2.5 flex flex-wrap gap-2">
               {summary.streak >= 1 && (
                 <span className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-subtle px-3 py-1 text-xs text-text-sub">
-                  🔥 連続{summary.streak}日
+                  🔥 {summary.streak}일 연속
                 </span>
               )}
               {topMood && (
                 <span className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-subtle px-3 py-1 text-xs text-text-sub">
-                  最近の気分：{MOOD_EMOJI[topMood]}
+                  가장 많은 감정 {MOOD_EMOJI[topMood]}
                 </span>
               )}
               <span className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-subtle px-3 py-1 text-xs text-text-sub">
-                ログ {summary.totalLogs}件
+                로그 {summary.totalLogs}개
               </span>
             </div>
           )}
@@ -136,7 +158,7 @@ export function DashboardPage() {
 
         {hasLogs && (
           <Link to="/logs" className="shrink-0">
-            <Button leftIcon={<span>✍️</span>}>新しいログ</Button>
+            <Button leftIcon={<span>📝</span>}>새 로그 쓰기</Button>
           </Link>
         )}
       </div>
@@ -149,63 +171,100 @@ export function DashboardPage() {
 
       {!isLoading && (
         <div className="space-y-6 animate-fade-in">
-          {/* ── 온보딩 ── */}
           {!hasLogs && <OnboardingCard />}
 
           {hasLogs && summary && (
             <>
-              {/* ① 성장 파트너 + 레이더 차트 */}
               <GrowthWidget />
 
-              {/* ② 코칭 어드바이스 */}
-              {dashboard?.coach?.week && (
-                <Section title="今週のコーチングアドバイス">
-                  <div className="space-y-3">
-                    {/* フォーカスポイント */}
-                    <div className="flex items-start gap-3">
-                      <span className="text-xl shrink-0">🎯</span>
-                      <div>
-                        <p className="text-[10px] font-semibold text-text-disabled uppercase tracking-widest mb-0.5">
-                          フォーカスポイント
-                        </p>
-                        <p className="text-xs font-bold text-primary-600 mb-1">
-                          {RULE_TAG_LABEL[dashboard.coach.week.focusRuleTag as RuleTag] ??
-                            dashboard.coach.week.focusRuleTag}
-                        </p>
-                        <p className="text-sm text-text-sub leading-relaxed">{dashboard.coach.week.why}</p>
+              <Section title="AI Workspace">
+                <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr_1fr]">
+                  <AgentCard
+                    eyebrow="Chat Agent"
+                    title="지금 무엇을 해야 할지 코치에게 물어보세요"
+                    description="자유롭게 질문하면 코치가 현재 맥락을 보고 기록, 피드백, 인사이트 중 어디로 가야 할지 제안합니다."
+                  >
+                    <CoachChatPanel />
+                  </AgentCard>
+
+                  {dashboard?.coach?.week && (
+                    <AgentCard
+                      eyebrow="Feedback Agent"
+                      title="이번 주에 가장 먼저 다듬을 포인트"
+                      description={dashboard.coach.week.why}
+                      action={
+                        <Link to="/logs">
+                          <Button size="sm" variant="secondary">
+                            피드백 받을 로그 열기
+                          </Button>
+                        </Link>
+                      }
+                    >
+                      <div className="space-y-3 text-sm text-text-sub">
+                        <div className="rounded-xl border border-primary-100 bg-primary-50 px-4 py-3">
+                          <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-primary-500">
+                            Focus Rule
+                          </p>
+                          <p className="font-semibold text-primary-800">
+                            {RULE_TAG_LABEL[dashboard.coach.week.focusRuleTag as RuleTag] ??
+                              dashboard.coach.week.focusRuleTag}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-text-disabled">
+                            One Action
+                          </p>
+                          <p>{dashboard.coach.week.oneAction}</p>
+                        </div>
                       </div>
-                    </div>
+                    </AgentCard>
+                  )}
 
-                    {/* 今週のアクション — 가장 강조 */}
-                    <div className="rounded-xl bg-primary-50 border border-primary-200 px-4 py-3.5">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-primary-500 mb-1.5">
-                        今週のアクション
-                      </p>
-                      <p className="text-sm font-semibold text-primary-800 leading-relaxed">
-                        {dashboard.coach.week.oneAction}
-                      </p>
-                    </div>
-
-                    {/* セルフチェック質問 */}
-                    <div className="rounded-xl bg-surface-subtle border border-border-subtle px-4 py-3">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-text-disabled mb-1.5">
-                        セルフチェック質問
-                      </p>
-                      <p className="text-sm text-text-sub italic leading-relaxed">
-                        &ldquo;{dashboard.coach.week.nextQuestion}&rdquo;
-                      </p>
-                    </div>
-                  </div>
-                </Section>
-              )}
-
-              {/* ③ 최근 로그 — KPI 카드 위로 이동 */}
-              <Section title="AI Coach">
-                <CoachChatPanel />
+                  {dashboard?.insights?.weekTopFocus && (
+                    <AgentCard
+                      eyebrow="Insight Agent"
+                      title="이번 주 인사이트를 한 번 더 정리해보세요"
+                      description="누적된 피드백과 기록 패턴을 바탕으로 다음 질문과 후속 포인트를 제안합니다."
+                      action={
+                        <Link to="/stats">
+                          <Button size="sm" variant="secondary">
+                            인사이트 자세히 보기
+                          </Button>
+                        </Link>
+                      }
+                    >
+                      <div className="space-y-3 text-sm text-text-sub">
+                        <div>
+                          <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-text-disabled">
+                            Next Question
+                          </p>
+                          <p className="italic">&ldquo;{dashboard.coach.week.nextQuestion}&rdquo;</p>
+                        </div>
+                        {dashboard.insights.nextTargets.length > 0 && (
+                          <div>
+                            <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-text-disabled">
+                              Next Targets
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {dashboard.insights.nextTargets.slice(0, 2).map((target) => (
+                                <span
+                                  key={target.ruleTag}
+                                  className="rounded-full border border-border-subtle bg-surface-elevated px-3 py-1 text-xs text-text-sub"
+                                >
+                                  {RULE_TAG_LABEL[target.ruleTag as RuleTag] ?? target.ruleTag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </AgentCard>
+                  )}
+                </div>
               </Section>
 
               {logs && logs.length > 0 && (
-                <Section title="最近のログ">
+                <Section title="최근 로그">
                   <div className="space-y-3">
                     {logs.slice(0, 3).map((log) => (
                       <LogCard key={log.id} log={log} />
@@ -213,54 +272,52 @@ export function DashboardPage() {
                   </div>
                   {logs.length > 3 && (
                     <div className="mt-4 text-center">
-                      <Link to="/logs" className="text-sm text-primary-500 font-medium hover:underline">
-                        すべてのログを見る ({logs.length}件) →
+                      <Link to="/logs" className="text-sm font-medium text-primary-500 hover:underline">
+                        모든 로그 보기 ({logs.length}개) →
                       </Link>
                     </div>
                   )}
                 </Section>
               )}
 
-              {/* ④ KPI 카드 */}
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <StatCard icon="📝" label="合計ログ数" value={summary.totalLogs} highlight />
-                <StatCard icon="📅" label="直近7日"    value={summary.last7DaysCount} sub="件の記録" />
+                <StatCard icon="🗂" label="전체 로그" value={summary.totalLogs} highlight />
+                <StatCard icon="📆" label="최근 7일" value={summary.last7DaysCount} sub="작성 수" />
                 <StatCard
                   icon="🔥"
-                  label="連続記録"
-                  value={`${summary.streak}日`}
+                  label="연속 기록"
+                  value={`${summary.streak}일`}
                   highlight={summary.streak >= 3}
                 />
                 <StatCard
-                  icon="🌟"
-                  label="最多気分"
+                  icon="🙂"
+                  label="상위 감정"
                   value={
                     Object.entries(summary.moodCount)
-                      .sort(([, a], [, b]) => b - a)[0]?.[0] ?? '—'
+                      .sort(([, a], [, b]) => b - a)[0]?.[0] ?? '-'
                   }
                 />
               </div>
 
-              {/* ⑤ 기분 분포 + 다음 타겟 */}
               <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-                <Section title="気分の分布">
+                <Section title="감정 분포">
                   <MoodDistribution moodCount={summary.moodCount} />
                 </Section>
 
                 {dashboard?.insights?.nextTargets && dashboard.insights.nextTargets.length > 0 && (
-                  <Section title="次の改善ターゲット">
+                  <Section title="다음에 챙겨볼 포인트">
                     <div className="space-y-2">
-                      {dashboard.insights.nextTargets.slice(0, 4).map((t, i) => (
+                      {dashboard.insights.nextTargets.slice(0, 4).map((target, index) => (
                         <div
-                          key={i}
-                          className="flex items-start gap-3 rounded-xl bg-surface-subtle px-3 py-2.5 hover:bg-primary-50 transition-colors"
+                          key={target.ruleTag}
+                          className="flex items-start gap-3 rounded-xl bg-surface-subtle px-3 py-2.5 transition-colors hover:bg-primary-50"
                         >
-                          <span className="text-primary-500 font-bold text-sm shrink-0">#{i + 1}</span>
+                          <span className="shrink-0 text-sm font-bold text-primary-500">#{index + 1}</span>
                           <div>
                             <p className="text-xs font-semibold text-text-sub">
-                              {RULE_TAG_LABEL[t.ruleTag as RuleTag] ?? t.ruleTag}
+                              {RULE_TAG_LABEL[target.ruleTag as RuleTag] ?? target.ruleTag}
                             </p>
-                            <p className="text-xs text-text-disabled mt-0.5">{t.message}</p>
+                            <p className="mt-0.5 text-xs text-text-disabled">{target.message}</p>
                           </div>
                         </div>
                       ))}
