@@ -25,7 +25,7 @@ export const statsApi = {
   },
 
   dashboard: async (): Promise<DashboardStats> => {
-    const res = await api.get<{ data: DashboardStats }>('/stats/dashboard')
+    const res = await api.get<{ data: DashboardStats }>('/ai/insight/dashboard')
     return res.data.data
   },
 }
