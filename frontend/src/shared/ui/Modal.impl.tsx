@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { clsx } from 'clsx'
 
 interface ModalProps {
@@ -7,6 +7,8 @@ interface ModalProps {
   title?: string
   children: ReactNode
   size?: 'sm' | 'md' | 'lg' | 'xl'
+  closeOnBackdrop?: boolean
+  closeOnEscape?: boolean
 }
 
 const sizes = {
@@ -16,13 +18,71 @@ const sizes = {
   xl: 'max-w-4xl',
 }
 
-export function Modal({ open, onClose, title, children, size = 'md' }: ModalProps) {
+function getFocusableElements(container: HTMLElement | null) {
+  if (!container) return []
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  )
+}
+
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  size = 'md',
+  closeOnBackdrop = true,
+  closeOnEscape = true,
+}: ModalProps) {
+  const panelRef = useRef<HTMLDivElement | null>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
+  const titleId = useId()
+
   useEffect(() => {
     if (!open) return
-    const handle = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    previousFocusRef.current = document.activeElement as HTMLElement | null
+
+    const focusables = getFocusableElements(panelRef.current)
+    const firstFocusable = focusables[0] ?? panelRef.current
+    firstFocusable?.focus()
+
+    const handle = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && closeOnEscape) {
+        e.preventDefault()
+        onClose()
+        return
+      }
+
+      if (e.key !== 'Tab') return
+
+      const items = getFocusableElements(panelRef.current)
+      if (items.length === 0) {
+        e.preventDefault()
+        panelRef.current?.focus()
+        return
+      }
+
+      const first = items[0]
+      const last = items[items.length - 1]
+      const active = document.activeElement as HTMLElement | null
+
+      if (e.shiftKey && active === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
     document.addEventListener('keydown', handle)
-    return () => document.removeEventListener('keydown', handle)
-  }, [open, onClose])
+    return () => {
+      document.removeEventListener('keydown', handle)
+      previousFocusRef.current?.focus()
+    }
+  }, [open, onClose, closeOnEscape])
 
   if (!open) return null
 
@@ -35,20 +95,27 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in"
-        onClick={onClose}
+        onClick={() => {
+          if (closeOnBackdrop) onClose()
+        }}
         aria-hidden="true"
       />
       {/* Panel */}
       <div
+        ref={panelRef}
         className={clsx(
           'relative z-10 w-full bg-surface-elevated rounded-2xl shadow-dashboard animate-slide-up',
           'max-h-[90vh] overflow-y-auto',
           sizes[size],
         )}
+        tabIndex={-1}
+        aria-labelledby={title ? titleId : undefined}
       >
         {title && (
           <div className="flex items-center justify-between border-b border-border-subtle px-6 py-4">
-            <h2 className="text-lg font-semibold text-text-main">{title}</h2>
+            <h2 id={titleId} className="text-lg font-semibold text-text-main">
+              {title}
+            </h2>
             <button
               onClick={onClose}
               className="rounded-lg p-1.5 text-text-disabled hover:bg-surface-muted hover:text-text-sub transition-colors"
