@@ -19,6 +19,18 @@ export interface FeedbackAgentResponse extends JaCheckResponse {
   agent: "feedback";
 }
 
+export interface ChatAgentInput {
+  message: string;
+}
+
+export interface ChatAgentResponse {
+  agent: "chat";
+  reply: string;
+  intent: "chat" | "feedback" | "insight";
+  route: "chat" | "feedback" | "insight";
+  suggestedActions: string[];
+}
+
 export interface InsightAgentBrainstormInput {
   logId: number;
   rawThoughts: string;
