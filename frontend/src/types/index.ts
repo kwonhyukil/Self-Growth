@@ -1,4 +1,5 @@
-﻿export * from '@contracts/api'
+export * from '@contracts/api'
+export * from '@contracts/ai'
 export * from '@contracts/auth'
 export * from '@contracts/common'
 export * from '@contracts/growth'
@@ -7,4 +8,3 @@ export * from '@contracts/logs'
 export * from '@contracts/revision'
 export * from '@contracts/stats'
 export * from '@contracts/verbalization'
-
