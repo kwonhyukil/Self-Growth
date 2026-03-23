@@ -10,9 +10,11 @@ interface StatCardProps {
 
 export function StatCard({ icon, label, value, sub, highlight }: StatCardProps) {
   return (
-    <div className={clsx('dashboard-panel p-4', highlight && 'border-primary-200 bg-primary-50/60')}>
+    <div className={clsx('journal-frame p-4', highlight && 'border-primary-200 bg-primary-50/70')}>
       <div className="flex items-start gap-3">
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface-emphasis text-2xl shadow-soft">{icon}</span>
+        <span className="flex h-12 w-12 items-center justify-center rounded-[1.2rem] bg-white/70 text-2xl shadow-soft">
+          {icon}
+        </span>
         <div>
           <p className="mb-1 text-caption text-text-soft">{label}</p>
           <p className={clsx('text-h2 font-semibold', highlight ? 'text-primary-700' : 'text-text-main')}>
