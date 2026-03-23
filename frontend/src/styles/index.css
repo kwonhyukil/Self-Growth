@@ -1,5 +1,5 @@
-@import url('https://cdn.jsdelivr.net/npm/pretendard/dist/web/static/pretendard.css');
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+@import 'react-activity/dist/library.css';
 
 @tailwind base;
 @tailwind components;
@@ -11,7 +11,7 @@
   }
 
   html {
-    font-family: 'Noto Sans JP', 'Pretendard Variable', 'Pretendard', 'Noto Sans KR', Inter, system-ui, sans-serif;
+    font-family: 'Noto Sans JP', 'Noto Sans KR', 'Segoe UI', sans-serif;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -21,9 +21,9 @@
     @apply bg-surface-canvas text-text-main text-body;
     min-height: 100vh;
     background-image:
-      radial-gradient(circle at 0% 0%, rgba(79, 70, 229, 0.06), transparent 30%),
-      radial-gradient(circle at 95% 8%, rgba(232, 96, 60, 0.05), transparent 25%),
-      linear-gradient(180deg, #FBF8F3 0%, #F5EFE6 100%);
+      radial-gradient(circle at 12% 12%, rgba(132, 169, 140, 0.16), transparent 24%),
+      radial-gradient(circle at 92% 8%, rgba(29, 53, 87, 0.1), transparent 18%),
+      linear-gradient(180deg, #f8f3ea 0%, #f2ebe0 42%, #ede3d4 100%);
   }
 
   * {
@@ -34,7 +34,9 @@
   h2,
   h3,
   h4 {
-    @apply font-display text-text-main;
+    @apply text-text-main;
+    font-family: 'Cormorant Garamond', 'Times New Roman', serif;
+    letter-spacing: -0.02em;
   }
 
   h1 {
@@ -52,12 +54,14 @@
 
 @layer components {
   .surface-card {
-    @apply rounded-card border bg-surface-elevated shadow-activity;
+    @apply rounded-card border shadow-activity backdrop-blur-sm;
+    border-color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 253, 248, 0.92);
   }
 
   .activity-card {
     @apply surface-card p-5 transition-all duration-180 ease-smooth;
-    @apply hover:-translate-y-0.5 hover:border-border-strong hover:shadow-activity-hover;
+    @apply hover:-translate-y-1 hover:border-primary-200 hover:shadow-activity-hover;
   }
 
   .dashboard-panel {
@@ -65,7 +69,7 @@
   }
 
   .section-label {
-    @apply text-caption font-semibold uppercase tracking-[0.14em] text-text-soft;
+    @apply text-caption font-semibold uppercase tracking-[0.18em] text-text-soft;
   }
 
   .field-label {
@@ -79,16 +83,33 @@
   .progress-fill {
     @apply h-full rounded-pill transition-all duration-240 ease-smooth;
   }
+
+  .journal-frame {
+    @apply rounded-[2rem] border shadow-dashboard backdrop-blur-md;
+    border-color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .journal-title {
+    font-family: 'Cormorant Garamond', serif;
+    @apply text-3xl font-semibold text-text-main md:text-4xl;
+  }
+
+  .agent-pill {
+    @apply inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-text-soft backdrop-blur-sm;
+    border-color: rgba(255, 255, 255, 0.7);
+    background-color: rgba(255, 255, 255, 0.7);
+  }
 }
 
 @layer utilities {
   .typography-ko {
-    line-height: 1.68;
+    line-height: 1.7;
     letter-spacing: -0.014em;
   }
 
   .typography-jp {
-    line-height: 1.76;
-    letter-spacing: -0.022em;
+    line-height: 1.78;
+    letter-spacing: -0.02em;
   }
 }

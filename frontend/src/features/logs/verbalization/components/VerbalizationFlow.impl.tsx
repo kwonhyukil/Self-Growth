@@ -179,6 +179,15 @@ export function VerbalizationFlow({ logId }: Props) {
 
   return (
     <div className="space-y-6">
+      <div className="rounded-xl border border-brand-200 bg-brand-50/40 p-4">
+        <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-brand-500">
+          Insight Agent
+        </p>
+        <p className="text-sm leading-relaxed text-slate-700">
+          이 단계에서는 생각을 길게 풀어 쓴 뒤 질문에 답하면서, 기록의 의미와 감정을 더 선명하게 정리합니다.
+        </p>
+      </div>
+
       {/* Step indicator */}
       <div className="flex items-center gap-4">
         <StepBadge n={1} label="記録" active={false} done={true} />

@@ -56,6 +56,15 @@ export function JaCheckPanel({ log }: JaCheckPanelProps) {
 
   return (
     <div className="space-y-6">
+      <div className="rounded-xl border border-primary-100 bg-primary-50/50 p-4">
+        <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-primary-600">
+          Feedback Agent
+        </p>
+        <p className="text-sm leading-relaxed text-text-sub">
+          이 단계에서는 일본어 문장을 점검하고, 문제 지점과 rewrite task를 바탕으로 문장을 더 자연스럽게 다듬습니다.
+        </p>
+      </div>
+
       {/* Original text */}
       <div className="rounded-xl border border-border-subtle bg-surface-subtle p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled mb-2">

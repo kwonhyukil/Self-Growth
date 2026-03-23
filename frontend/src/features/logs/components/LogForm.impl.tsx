@@ -1,4 +1,4 @@
-import { useEffect, useState, Fragment } from 'react'
+import { useCallback, useEffect, useState, Fragment } from 'react'
 import type { CreateLogBody, GrowthLog, MoodTag } from '@/types'
 import { MOOD_TAGS } from '@/types'
 import { MOOD_EMOJI, MOOD_LABELS, MOOD_FEEDBACK, JA_MIN_LEN, JA_MAX_LEN } from '@/shared/lib/constants'
@@ -151,7 +151,7 @@ export function LogForm({
     }
   }
 
-  const handleDraftJa = async () => {
+  const handleDraftJa = useCallback(async () => {
     if (!savedLogId) return
 
     setError(null)
@@ -169,7 +169,7 @@ export function LogForm({
     } finally {
       setDrafting(false)
     }
-  }
+  }, [onDraftApplied, savedLogId])
 
   useEffect(() => {
     if (!autoDraftJa || autoDraftDone || !savedLogId) return
@@ -177,7 +177,7 @@ export function LogForm({
 
     setAutoDraftDone(true)
     void handleDraftJa()
-  }, [autoDraftJa, autoDraftDone, praiseKo, praiseJa, savedLogId])
+  }, [autoDraftJa, autoDraftDone, handleDraftJa, praiseKo, praiseJa, savedLogId])
 
   const goNext = () => setStep((current) => (current < 4 ? ((current + 1) as 1 | 2 | 3 | 4) : current))
   const goPrev = () => setStep((current) => (current > 1 ? ((current - 1) as 1 | 2 | 3 | 4) : current))

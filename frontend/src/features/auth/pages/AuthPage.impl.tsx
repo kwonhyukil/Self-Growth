@@ -8,9 +8,9 @@ import { ErrorMessage } from '@/shared/ui/ErrorMessage'
 type Mode = 'login' | 'signup'
 
 const BRAND_VALUES = [
-  { icon: '📝', text: '感情を記録する' },
-  { icon: '🌸', text: '日本語で自分を褒める' },
-  { icon: '📈', text: '成長を可視化する' },
+  { icon: '📝', text: '하루의 장면과 감정을 차분하게 기록하기' },
+  { icon: '🤖', text: 'Feedback Agent로 일본어 문장을 다듬기' },
+  { icon: '🧠', text: 'Insight Agent로 생각의 의미를 더 깊게 정리하기' },
 ]
 
 export function AuthPage() {
@@ -43,99 +43,108 @@ export function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-2">
-      {/* ── 왼쪽 브랜드 패널 (lg 이상) ── */}
-      <div className="hidden lg:flex flex-col justify-center bg-primary-600 px-16 text-white">
-        <div className="text-6xl mb-6">🌱</div>
-        <h2 className="text-3xl font-bold mb-3">Self Growth Log</h2>
-        <p className="text-xl text-primary-100 mb-10 leading-relaxed">
-          小さな記録が、<br />大きな成長になる
-        </p>
-        <ul className="space-y-5">
-          {BRAND_VALUES.map((item) => (
-            <li key={item.text} className="flex items-center gap-4">
-              <span className="text-2xl">{item.icon}</span>
-              <span className="text-base text-primary-100">{item.text}</span>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-14 text-primary-300 text-sm italic">「継続は力なり。」</p>
-      </div>
-
-      {/* ── 오른쪽 폼 패널 ── */}
-      <div className="flex items-center justify-center bg-gradient-to-br from-primary-50 to-surface-muted p-8">
-        <div className="w-full max-w-sm">
-          {/* 로고 — 모바일 전용 */}
-          <div className="mb-8 text-center lg:hidden">
-            <span className="text-5xl">🌱</span>
-            <h1 className="mt-3 text-2xl font-bold text-text-main">Self Growth Log</h1>
-            <p className="mt-1 text-sm text-text-soft">日本語コーチングで成長を記録</p>
+    <div className="min-h-screen bg-surface-canvas px-6 py-8 lg:px-10">
+      <div className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl overflow-hidden rounded-[2.2rem] border border-white/60 bg-white/35 shadow-dashboard backdrop-blur-md lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="hidden border-r border-white/60 bg-[linear-gradient(180deg,rgba(255,253,248,0.82),rgba(239,230,215,0.74))] px-12 py-14 lg:flex lg:flex-col lg:justify-between">
+          <div>
+            <p className="agent-pill">Calm Journal</p>
+            <h1 className="journal-title mt-5 text-5xl">Self Growth Log</h1>
+            <p className="mt-5 max-w-xl text-bodySm leading-relaxed text-text-sub">
+              하루의 감정 기록을 AI와 함께 더 나은 문장과 더 깊은 통찰로 연결하는 조용한 작업실.
+            </p>
           </div>
 
-          {/* lg: 폼 위 환영 문구 */}
-          <div className="hidden lg:block mb-6">
-            <h1 className="text-2xl font-bold text-text-main">
-              {mode === 'login' ? 'おかえりなさい 🌱' : 'はじめまして 🌱'}
-            </h1>
-            <p className="mt-1 text-sm text-text-soft">日本語コーチングで成長を記録しましょう</p>
+          <div className="space-y-4">
+            {BRAND_VALUES.map((item) => (
+              <div key={item.text} className="rounded-[1.4rem] border border-white/70 bg-white/55 px-5 py-4 shadow-soft">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{item.icon}</span>
+                  <p className="text-sm leading-relaxed text-text-sub">{item.text}</p>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="rounded-2xl bg-surface-elevated p-8 shadow-activity">
-            {/* Tab */}
-            <div className="mb-6 flex rounded-lg bg-surface-muted p-1">
-              {(['login', 'signup'] as Mode[]).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => { setMode(m); setError(null) }}
-                  className={`flex-1 rounded-md py-1.5 text-sm font-medium transition-colors ${
-                    mode === m
-                      ? 'bg-surface-elevated text-text-main shadow-sm'
-                      : 'text-text-soft hover:text-text-sub'
-                  }`}
-                >
-                  {m === 'login' ? 'ログイン' : '新規登録'}
-                </button>
-              ))}
+          <p className="text-sm italic text-text-soft">
+            Small entries become better language and clearer insight.
+          </p>
+        </div>
+
+        <div className="flex items-center justify-center px-6 py-10 md:px-10">
+          <div className="w-full max-w-md">
+            <div className="mb-8 text-center lg:text-left">
+              <p className="agent-pill mx-auto lg:mx-0">{mode === 'login' ? 'Welcome Back' : 'Start New Flow'}</p>
+              <h2 className="journal-title mt-4 text-4xl">
+                {mode === 'login' ? '다시 이어가기' : '첫 기록 시작하기'}
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-text-soft">
+                {mode === 'login'
+                  ? '이전에 남긴 기록과 AI 흐름을 이어서 불러옵니다.'
+                  : '계정을 만들면 저널, 피드백, 인사이트 흐름을 바로 사용할 수 있습니다.'}
+              </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {mode === 'signup' && (
+            <div className="journal-frame p-7">
+              <div className="mb-6 flex rounded-full border border-white/70 bg-white/55 p-1 shadow-soft">
+                {(['login', 'signup'] as Mode[]).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => {
+                      setMode(m)
+                      setError(null)
+                    }}
+                    className={`flex-1 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                      mode === m
+                        ? 'bg-primary-500 text-white shadow-soft'
+                        : 'text-text-soft hover:text-text-sub'
+                    }`}
+                  >
+                    {m === 'login' ? '로그인' : '회원가입'}
+                  </button>
+                ))}
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {mode === 'signup' && (
+                  <Input
+                    label="이름"
+                    type="text"
+                    placeholder="예: Kwon Hyukil"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    autoComplete="name"
+                  />
+                )}
+
                 <Input
-                  label="お名前"
-                  type="text"
-                  placeholder="山田 太郎"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  label="이메일"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  autoComplete="name"
+                  autoComplete="email"
                 />
-              )}
-              <Input
-                label="メールアドレス"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-              <Input
-                label="パスワード"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              />
 
-              {error !== null && <ErrorMessage error={error} />}
+                <Input
+                  label="비밀번호"
+                  type="password"
+                  placeholder="8자 이상 입력"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={8}
+                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                />
 
-              <Button type="submit" isLoading={loading} className="w-full" size="lg">
-                {mode === 'login' ? 'ログイン' : 'アカウントを作成'}
-              </Button>
-            </form>
+                {error !== null && <ErrorMessage error={error} />}
+
+                <Button type="submit" isLoading={loading} className="w-full" size="lg">
+                  {mode === 'login' ? '로그인하고 계속하기' : '계정 만들고 시작하기'}
+                </Button>
+              </form>
+            </div>
           </div>
         </div>
       </div>

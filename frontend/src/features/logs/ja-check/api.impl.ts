@@ -9,9 +9,9 @@ import type {
 } from '@/types'
 
 export const jaCheckApi = {
-  /** POST /logs/:id/check-ja — run AI feedback */
+  /** POST /ai/feedback/logs/:id — run Feedback Agent */
   run: async (logId: number): Promise<JaCheckResponse> => {
-    const res = await api.post<{ data: JaCheckResponse }>(`/logs/${logId}/check-ja`)
+    const res = await api.post<{ data: JaCheckResponse }>(`/ai/feedback/logs/${logId}`)
     return res.data.data
   },
 
