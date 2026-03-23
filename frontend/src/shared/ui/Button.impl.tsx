@@ -14,11 +14,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<Variant, string> = {
   primary:
-    'bg-primary-600 text-white shadow-soft hover:bg-primary-700 active:bg-primary-800 focus-visible:ring-border-focus',
+    'border border-primary-500 bg-primary-500 text-white shadow-soft hover:bg-primary-600 active:bg-primary-700 focus-visible:ring-border-focus',
   secondary:
-    'border border-border bg-surface-elevated text-text-main hover:border-border-strong hover:bg-surface-subtle active:bg-surface-emphasis focus-visible:ring-border-focus',
+    'border border-white/70 bg-white/70 text-text-main shadow-soft hover:border-border-strong hover:bg-white active:bg-surface-emphasis focus-visible:ring-border-focus',
   ghost:
-    'text-text-sub hover:bg-surface-emphasis hover:text-text-main active:bg-neutral-100 focus-visible:ring-border-focus',
+    'text-text-sub hover:bg-white/60 hover:text-text-main active:bg-neutral-100 focus-visible:ring-border-focus',
   danger:
     'bg-error-600 text-white shadow-soft hover:bg-error-700 active:bg-error-800 focus-visible:ring-error-400',
 }
@@ -35,7 +35,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       ref={ref}
       disabled={disabled || isLoading}
       className={clsx(
-        'inline-flex items-center justify-center rounded-control font-medium',
+        'inline-flex items-center justify-center rounded-pill font-medium',
         'transition-all duration-180 ease-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-elevated',
         'active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50',
         variants[variant],
