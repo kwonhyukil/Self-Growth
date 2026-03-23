@@ -9,32 +9,58 @@ interface LogCardProps {
 }
 
 export function LogCard({ log }: LogCardProps) {
+  const hasJa = Boolean(log.praiseJa?.trim())
+
   return (
-    <Link to={`/logs/${log.id}`} className="activity-card group block">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <Badge className={MOOD_COLOR[log.moodTag]}>
-          {MOOD_EMOJI[log.moodTag]} {MOOD_LABELS[log.moodTag]}
-        </Badge>
-        <time className="shrink-0 text-caption text-text-disabled">{fmt.date(log.happenedAt)}</time>
-      </div>
-
-      <p className="section-label mb-1">きっかけ</p>
-      <p className="mb-4 line-clamp-2 text-bodySm text-text-main">{log.triggerKo}</p>
-
-      <div className="rounded-panel border border-border-subtle bg-surface-subtle px-4 py-3">
-        <p className="mb-1 text-caption text-text-soft">日本語の振り返り</p>
-        {log.praiseJa ? (
-          <p className="line-clamp-2 text-bodySm font-medium text-text-main">{log.praiseJa}</p>
-        ) : (
-          <p className="line-clamp-2 text-bodySm italic text-text-disabled">
-            まだ日本語の振り返りはありません
+    <Link to={`/logs/${log.id}`} className="activity-card group block overflow-hidden">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="space-y-2">
+          <Badge className={MOOD_COLOR[log.moodTag]}>
+            {MOOD_EMOJI[log.moodTag]} {MOOD_LABELS[log.moodTag]}
+          </Badge>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-disabled">
+            {fmt.fromNow(log.createdAt)}
           </p>
-        )}
+        </div>
+        <time className="shrink-0 rounded-full border border-white/70 bg-white/70 px-3 py-1 text-caption text-text-disabled">
+          {fmt.date(log.happenedAt)}
+        </time>
       </div>
 
-      <div className="mt-4 flex items-center justify-between text-caption">
-        <span className="text-text-disabled">{fmt.fromNow(log.createdAt)}</span>
-        <span className="font-semibold text-primary-600 transition-colors group-hover:text-primary-700">詳細を見る</span>
+      <div className="space-y-4">
+        <div>
+          <p className="section-label mb-2">Scene</p>
+          <p className="line-clamp-3 text-bodySm leading-relaxed text-text-main">{log.triggerKo}</p>
+        </div>
+
+        <div className="rounded-[1.4rem] border border-white/70 bg-white/60 px-4 py-4">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-text-disabled">
+            Japanese Reflection
+          </p>
+          {hasJa ? (
+            <p className="line-clamp-3 text-bodySm font-medium leading-relaxed text-text-main">
+              {log.praiseJa}
+            </p>
+          ) : (
+            <p className="line-clamp-2 text-bodySm italic leading-relaxed text-text-disabled">
+              아직 일본어 문장이 없습니다. 이 로그는 Edit 단계에서 문장을 정리한 뒤 Feedback Agent로 이어질 수 있습니다.
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-5 flex items-center justify-between">
+        <div className="flex flex-wrap gap-2">
+          <span className="rounded-full border border-white/70 bg-white/70 px-3 py-1 text-[11px] text-text-sub">
+            {hasJa ? 'Feedback ready' : 'Edit first'}
+          </span>
+          <span className="rounded-full border border-white/70 bg-white/70 px-3 py-1 text-[11px] text-text-sub">
+            Insight available
+          </span>
+        </div>
+        <span className="text-sm font-semibold text-primary-700 transition-colors group-hover:text-primary-800">
+          Open journal →
+        </span>
       </div>
     </Link>
   )

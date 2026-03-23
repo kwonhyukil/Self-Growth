@@ -14,7 +14,7 @@ import type { RuleTag, MoodTag } from '@/types'
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-elevated p-6 shadow-activity">
+    <div className="journal-frame p-6">
       <h2 className="section-label mb-4">{title}</h2>
       {children}
     </div>
@@ -35,7 +35,7 @@ function AgentCard({
   children?: React.ReactNode
 }) {
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-subtle p-5">
+    <div className="rounded-[1.6rem] border border-white/60 bg-white/45 p-5 backdrop-blur-sm">
       <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-text-disabled">
         {eyebrow}
       </p>
@@ -70,7 +70,7 @@ function OnboardingCard() {
   ]
 
   return (
-    <div className="rounded-2xl border-2 border-dashed border-primary-200 bg-primary-50/30 p-8">
+    <div className="journal-frame border-2 border-dashed border-primary-200 px-8 py-10">
       <div className="mb-7 text-center">
         <div className="mb-3 text-4xl">🌱</div>
         <h2 className="text-lg font-bold text-text-main">첫 기록부터 AI 코칭까지 한 흐름으로 시작하세요</h2>
@@ -126,12 +126,13 @@ export function DashboardPage() {
     <div className="mx-auto max-w-5xl space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-text-main">
+          <p className="agent-pill">Calm Journal + AI Workspace</p>
+          <h1 className="journal-title mt-4">
             {hasLogs
               ? `${user?.name ? `${user.name}님, ` : ''}오늘도 성장 흐름을 이어가볼까요?`
               : `${user?.name ? `${user.name}님, ` : ''}첫 로그부터 시작해볼까요?`}
           </h1>
-          <p className="mt-0.5 text-sm text-text-disabled">
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-text-disabled">
             {hasLogs
               ? 'Chat Agent, Feedback Agent, Insight Agent를 한 화면에서 이어서 사용할 수 있습니다.'
               : '기록을 남기면 AI 코치가 다음 행동을 자연스럽게 안내해줍니다.'}
@@ -178,7 +179,7 @@ export function DashboardPage() {
               <GrowthWidget />
 
               <Section title="AI Workspace">
-                <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr_1fr]">
+                <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr_1fr]">
                   <AgentCard
                     eyebrow="Chat Agent"
                     title="지금 무엇을 해야 할지 코치에게 물어보세요"
@@ -201,7 +202,7 @@ export function DashboardPage() {
                       }
                     >
                       <div className="space-y-3 text-sm text-text-sub">
-                        <div className="rounded-xl border border-primary-100 bg-primary-50 px-4 py-3">
+                        <div className="rounded-[1.3rem] border border-primary-100 bg-primary-50/80 px-4 py-3">
                           <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-primary-500">
                             Focus Rule
                           </p>
@@ -310,7 +311,7 @@ export function DashboardPage() {
                       {dashboard.insights.nextTargets.slice(0, 4).map((target, index) => (
                         <div
                           key={target.ruleTag}
-                          className="flex items-start gap-3 rounded-xl bg-surface-subtle px-3 py-2.5 transition-colors hover:bg-primary-50"
+                          className="flex items-start gap-3 rounded-[1.2rem] border border-white/60 bg-white/50 px-3 py-3 transition-colors hover:bg-primary-50"
                         >
                           <span className="shrink-0 text-sm font-bold text-primary-500">#{index + 1}</span>
                           <div>

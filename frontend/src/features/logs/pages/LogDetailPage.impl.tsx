@@ -35,8 +35,8 @@ function StageCard({
     <div
       className={`rounded-xl border px-4 py-3 transition-colors ${
         active
-          ? 'border-primary-200 bg-primary-50'
-          : 'border-border-subtle bg-surface-subtle'
+          ? 'border-primary-200 bg-primary-50/80'
+          : 'border-white/60 bg-white/45'
       }`}
     >
       <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-text-disabled">
@@ -179,9 +179,10 @@ export function LogDetailPage() {
         ← 로그 목록으로 돌아가기
       </button>
 
-      <div className="rounded-2xl border border-border-subtle bg-surface-elevated p-6 shadow-activity">
+      <div className="journal-frame overflow-hidden p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
+            <p className="agent-pill mb-4">Journal Entry</p>
             <div className="mb-2 flex items-center gap-2">
               <Badge className={MOOD_COLOR[log.moodTag]}>
                 {MOOD_EMOJI[log.moodTag]} {MOOD_LABELS[log.moodTag]}
@@ -208,11 +209,11 @@ export function LogDetailPage() {
             )}
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <div className="rounded-lg bg-surface-subtle p-3">
+              <div className="rounded-[1.2rem] border border-white/60 bg-white/45 p-3">
                 <p className="mb-1 text-xs text-text-disabled">자기 칭찬 문장 (한국어)</p>
                 <p className="text-sm text-text-sub">{log.praiseKo}</p>
               </div>
-              <div className="rounded-lg border border-primary-100 bg-primary-50 p-3">
+              <div className="rounded-[1.2rem] border border-primary-100 bg-primary-50/70 p-3">
                 <p className="mb-1 text-xs text-primary-500">자기 표현 문장 (일본어)</p>
                 {hasJa ? (
                   <p className="text-sm font-medium text-text-main">{log.praiseJa}</p>
@@ -287,7 +288,7 @@ export function LogDetailPage() {
         {stageSummary[tab].description}
       </p>
 
-      <div className="rounded-2xl border border-border-subtle bg-surface-elevated p-6 shadow-activity">
+      <div className="journal-frame p-6">
         {tab === 'feedback' && <JaCheckPanel log={log} />}
         {tab === 'verbalize' && <VerbalizationFlow logId={logId} />}
         {tab === 'edit' && (
