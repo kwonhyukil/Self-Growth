@@ -9,19 +9,17 @@ import type { RuleTag } from '@/types'
 import { clsx } from 'clsx'
 
 const DAYS_OPTIONS = [7, 30, 90] as const
-type Days = typeof DAYS_OPTIONS[number]
+type Days = (typeof DAYS_OPTIONS)[number]
 
-// ── 빈 상태 ───────────────────────────────────────────────────
 function EmptyState({ icon, message }: { icon: string; message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-10 gap-2 text-center">
+    <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
       <span className="text-3xl opacity-30">{icon}</span>
-      <p className="text-sm text-text-disabled leading-relaxed max-w-[200px]">{message}</p>
+      <p className="max-w-[220px] text-sm leading-relaxed text-text-disabled">{message}</p>
     </div>
   )
 }
 
-// ── 수치 포맷: 0 또는 null → "—" ─────────────────────────────
 function fmtNum(n: number | undefined | null, decimals = 1): string {
   if (n == null || n === 0) return '—'
   return Number(n).toFixed(decimals)
@@ -36,105 +34,99 @@ export function StatsPage() {
   const hasRevisionData = (jaStats?.totalRevisions ?? 0) > 0
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-text-main">統計・日本語改善</h1>
-        <p className="text-sm text-text-soft mt-0.5">あなたの学習パターンと進捗を確認</p>
-      </div>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <section className="journal-frame overflow-hidden px-7 py-8 md:px-10 md:py-10">
+        <p className="agent-pill">Insight Overview</p>
+        <h1 className="journal-title mt-4">Growth signals and language trends</h1>
+        <p className="mt-4 max-w-2xl text-bodySm leading-relaxed text-text-sub">
+          로그 수, 교정 흐름, 감정 분포를 함께 보며 어떤 습관이 쌓이고 있고 어디를 다듬어야 하는지 한 화면에서 확인합니다.
+        </p>
+      </section>
 
       {isLoading && (
-        <div className="flex justify-center py-16">
-          <Spinner size="lg" />
+        <div className="journal-frame flex justify-center py-16">
+          <Spinner size="lg" variant="levels" />
         </div>
       )}
 
       {!isLoading && (
         <div className="space-y-6 animate-fade-in">
-          {/* ── KPI カード ── */}
           {summary && (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <StatCard icon="📝" label="合計ログ数" value={summary.totalLogs} />
-              <StatCard icon="🔥" label="連続記録" value={`${summary.streak}日`} highlight />
-              <StatCard icon="📅" label="直近7日" value={summary.last7DaysCount} sub="件" />
+              <StatCard icon="🗂" label="전체 로그" value={summary.totalLogs} />
+              <StatCard icon="🔥" label="연속 기록" value={`${summary.streak}일`} highlight />
+              <StatCard icon="📆" label="최근 7일" value={summary.last7DaysCount} sub="작성 수" />
               <StatCard
-                icon="💪"
-                label="日本語改善"
-                value={jaStats ? `${jaStats.totalRevisions}回` : '—'}
-                sub="書き直し回数"
+                icon="✍"
+                label="교정 시도"
+                value={jaStats ? `${jaStats.totalRevisions}회` : '—'}
+                sub="rewrite 기준"
               />
             </div>
           )}
 
-          {/* ── 기간 선택기 ── */}
           <div className="flex items-center gap-3">
-            <span className="text-sm text-text-soft font-medium">期間:</span>
-            <div className="flex rounded-xl border border-border bg-surface-elevated p-1 gap-0.5 shadow-soft">
+            <span className="text-sm font-medium text-text-soft">기간</span>
+            <div className="flex gap-1 rounded-full border border-white/70 bg-white/55 p-1 shadow-soft">
               {DAYS_OPTIONS.map((d) => (
                 <button
                   key={d}
                   onClick={() => setDays(d)}
                   className={clsx(
-                    'rounded-lg px-4 py-1.5 text-sm font-semibold transition-all',
-                    days === d ? 'bg-primary-600 text-white shadow-sm' : 'text-text-soft hover:bg-surface-subtle',
+                    'rounded-full px-4 py-1.5 text-sm font-semibold transition-all',
+                    days === d ? 'bg-primary-500 text-white shadow-soft' : 'text-text-soft hover:text-text-sub',
                   )}
                 >
-                  {d}日
+                  {d}일
                 </button>
               ))}
             </div>
           </div>
 
-          {/* ── 트렌드 차트 — two-column grid 위 ── */}
           {jaStats && jaStats.trend.length > 0 && (
-            <div className="rounded-2xl border border-border-subtle bg-surface-elevated p-6 shadow-activity">
-              <h2 className="section-label mb-1">改善トレンド（{days}日）</h2>
-              <p className="text-xs text-text-soft mb-4">書き直しによる問題数の変化</p>
+            <div className="journal-frame p-6">
+              <h2 className="section-label mb-1">Correction Trend · {days} days</h2>
+              <p className="mb-4 text-xs text-text-soft">최근 교정 결과가 어느 방향으로 움직이는지 보여줍니다.</p>
               <TrendChart trend={jaStats.trend} />
             </div>
           )}
 
-          {/* ── JA 개선 통계 ── */}
           {jaStats ? (
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-              {/* 개선 요약 */}
-              <div className="rounded-2xl border border-border-subtle bg-surface-elevated p-6 shadow-activity">
-                <h2 className="section-label mb-5">日本語改善サマリー（{days}日）</h2>
+              <div className="journal-frame p-6">
+                <h2 className="section-label mb-5">Feedback Summary · {days} days</h2>
 
                 {!hasRevisionData ? (
-                  <EmptyState
-                    icon="📊"
-                    message={`まだ${days}日以内の書き直しデータがありません`}
-                  />
+                  <EmptyState icon="✍" message={`${days}일 동안 아직 rewrite 이력이 없습니다.`} />
                 ) : (
-
                   <div className="space-y-1">
-                    <Row label="書き直し回数" value={`${jaStats.totalRevisions}回`} />
+                    <Row label="교정 횟수" value={`${jaStats.totalRevisions}회`} />
                     <Row
-                      label="合計改善問題数"
+                      label="누적 문제 변화"
                       value={
                         jaStats.totalDeltaIssueCount < 0
-                          ? `${Math.abs(jaStats.totalDeltaIssueCount)}件改善`
+                          ? `${Math.abs(jaStats.totalDeltaIssueCount)}개 감소`
                           : fmtNum(jaStats.totalDeltaIssueCount, 0)
                       }
                       highlight={jaStats.totalDeltaIssueCount < 0}
                     />
-                    <Row label="平均改善 / 回" value={fmtNum(jaStats.avgDeltaIssueCount)} />
+                    <Row label="평균 변화 / 회" value={fmtNum(jaStats.avgDeltaIssueCount)} />
 
                     <div className="pt-4">
-                      <p className="text-xs text-text-disabled mb-2.5">重要度別分布</p>
+                      <p className="mb-2.5 text-xs text-text-disabled">Severity distribution</p>
                       <div className="flex gap-2">
-                        {(['high', 'medium', 'low'] as const).map((s) => {
-                          const n = jaStats.severityDistribution[s]
+                        {(['high', 'medium', 'low'] as const).map((severity) => {
+                          const value = jaStats.severityDistribution[severity]
                           const styles = {
-                            high:   'bg-red-50   text-red-600',
-                            medium: 'bg-amber-50  text-amber-600',
-                            low:    'bg-emerald-50 text-emerald-600',
+                            high: 'bg-red-50 text-red-600',
+                            medium: 'bg-amber-50 text-amber-600',
+                            low: 'bg-emerald-50 text-emerald-600',
                           }
-                          const labels = { high: '重要', medium: '中程度', low: '軽微' }
+                          const labels = { high: 'High', medium: 'Medium', low: 'Low' }
                           return (
-                            <div key={s} className={`flex-1 text-center rounded-xl py-3 ${styles[s]}`}>
-                              <p className="text-xl font-bold">{n > 0 ? n : '—'}</p>
-                              <p className="text-[10px] font-semibold mt-0.5 opacity-70">{labels[s]}</p>
+                            <div key={severity} className={`flex-1 rounded-[1.2rem] py-3 text-center ${styles[severity]}`}>
+                              <p className="text-xl font-bold">{value > 0 ? value : '—'}</p>
+                              <p className="mt-0.5 text-[10px] font-semibold opacity-70">{labels[severity]}</p>
                             </div>
                           )
                         })}
@@ -144,28 +136,24 @@ export function StatsPage() {
                 )}
               </div>
 
-              {/* 자주 지적된 규칙 */}
-              <div className="rounded-2xl border border-border-subtle bg-surface-elevated p-6 shadow-activity">
-                <h2 className="section-label mb-5">よく指摘されるルール</h2>
+              <div className="journal-frame p-6">
+                <h2 className="section-label mb-5">Frequently Seen Rules</h2>
 
                 {!jaStats.ruleTagTop || jaStats.ruleTagTop.length === 0 ? (
-                  <EmptyState
-                    icon="🔍"
-                    message="書き直しをするとよく指摘されたルールがここに表示されます"
-                  />
+                  <EmptyState icon="🔎" message="아직 충분한 교정 데이터가 쌓이지 않았습니다." />
                 ) : (
                   <div className="space-y-3">
-                    {jaStats.ruleTagTop.slice(0, 5).map((r, i) => {
+                    {jaStats.ruleTagTop.slice(0, 5).map((rule, index) => {
                       const maxCount = jaStats.ruleTagTop[0]?.count ?? 1
-                      const pct = Math.round((r.count / maxCount) * 100)
+                      const pct = Math.round((rule.count / maxCount) * 100)
                       return (
-                        <div key={r.ruleTag} className="flex items-center gap-3 group">
-                          <span className="w-5 text-center text-xs font-bold text-text-disabled group-hover:text-primary-400 transition-colors shrink-0">
-                            {i + 1}
+                        <div key={rule.ruleTag} className="group flex items-center gap-3">
+                          <span className="w-5 shrink-0 text-center text-xs font-bold text-text-disabled transition-colors group-hover:text-primary-400">
+                            {index + 1}
                           </span>
-                          <div className="flex-1 min-w-0 space-y-1">
-                            <span className="text-sm text-text-sub font-medium block truncate">
-                              {RULE_TAG_LABEL[r.ruleTag as RuleTag] ?? r.ruleTag}
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <span className="block truncate text-sm font-medium text-text-sub">
+                              {RULE_TAG_LABEL[rule.ruleTag as RuleTag] ?? rule.ruleTag}
                             </span>
                             <div className="h-1.5 w-full rounded-full bg-surface-muted">
                               <div
@@ -174,7 +162,7 @@ export function StatsPage() {
                               />
                             </div>
                           </div>
-                          <span className="text-sm font-bold text-primary-600 shrink-0 tabular-nums">{r.count}</span>
+                          <span className="shrink-0 text-sm font-bold tabular-nums text-primary-600">{rule.count}</span>
                         </div>
                       )
                     })}
@@ -183,36 +171,33 @@ export function StatsPage() {
               </div>
             </div>
           ) : (
-            /* ── 미래 예고형 잠금 카드 ── */
-            <div className="rounded-2xl border border-border-subtle bg-surface-elevated p-6 shadow-activity">
-              <h2 className="section-label mb-1">日本語改善データ</h2>
-              <p className="text-xs text-text-soft mb-5">ログを書き直すと、以下のデータが解放されます</p>
+            <div className="journal-frame p-6">
+              <h2 className="section-label mb-1">Feedback Readiness</h2>
+              <p className="mb-5 text-xs text-text-soft">로그와 rewrite 이력이 쌓이면 아래 분석이 열립니다.</p>
               <div className="space-y-3">
                 {([
-                  { icon: '📊', cond: '書き直し1回', desc: '感情の分布グラフ' },
-                  { icon: '📈', cond: '7日以上の記録', desc: '感情の流れ（トレンド）' },
-                  { icon: '🔍', cond: '3件以上の書き直し', desc: 'よく指摘されるルール TOP6' },
+                  { icon: '✍', cond: 'rewrite 1회 이상', desc: '문제 변화 추세' },
+                  { icon: '🧠', cond: '7일 이상 기록', desc: '주간 인사이트 힌트' },
+                  { icon: '📚', cond: '여러 번의 교정 누적', desc: '자주 흔들리는 규칙 TOP' },
                 ] as const).map((item) => (
                   <div
                     key={item.desc}
-                    className="flex items-center gap-4 rounded-xl border border-dashed border-border p-4 opacity-60"
+                    className="flex items-center gap-4 rounded-[1.2rem] border border-dashed border-border px-4 py-4 opacity-70"
                   >
-                    <span className="text-2xl shrink-0">{item.icon}</span>
-                    <div className="flex-1 min-w-0">
+                    <span className="shrink-0 text-2xl">{item.icon}</span>
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-text-main">{item.desc}</p>
-                      <p className="text-xs text-text-soft mt-0.5">{item.cond}が積まれると表示されます</p>
+                      <p className="mt-0.5 text-xs text-text-soft">{item.cond} 조건에서 열립니다.</p>
                     </div>
-                    <span className="text-lg text-text-disabled shrink-0">🔒</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* ── 기분 분포 ── */}
           {summary && (
-            <div className="rounded-2xl border border-border-subtle bg-surface-elevated p-6 shadow-activity">
-              <h2 className="section-label mb-4">気分の分布</h2>
+            <div className="journal-frame p-6">
+              <h2 className="section-label mb-4">Emotion Distribution</h2>
               <MoodDistribution moodCount={summary.moodCount} />
             </div>
           )}
@@ -222,16 +207,16 @@ export function StatsPage() {
   )
 }
 
-// ── Row ───────────────────────────────────────────────────────
 function Row({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-border-subtle last:border-0">
+    <div className="flex items-center justify-between border-b border-border-subtle py-2.5 last:border-0">
       <span className="text-sm text-text-soft">{label}</span>
-      <span className={clsx(
-        'text-sm font-bold',
-        highlight    ? 'text-success-600' :
-        value === '—'? 'text-text-disabled' : 'text-text-main'
-      )}>
+      <span
+        className={clsx(
+          'text-sm font-bold',
+          highlight ? 'text-success-600' : value === '—' ? 'text-text-disabled' : 'text-text-main',
+        )}
+      >
         {value}
       </span>
     </div>
