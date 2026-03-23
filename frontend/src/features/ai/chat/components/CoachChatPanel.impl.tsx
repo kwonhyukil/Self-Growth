@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useChatAgent } from '@/features/ai/chat/queries'
+import { useLogs } from '@/features/logs/queries'
 import { Button } from '@/shared/ui/Button'
 import { ErrorMessage } from '@/shared/ui/ErrorMessage'
 import { Textarea } from '@/shared/ui/Input'
@@ -10,15 +12,56 @@ const QUICK_PROMPTS = [
   '일본어 피드백을 먼저 받아야 할지 알려줘.',
 ]
 
+function buildRouteTarget(route: 'chat' | 'feedback' | 'insight', logs: ReturnType<typeof useLogs>['data']) {
+  const latestLog = logs?.[0]
+  const latestFeedbackReadyLog = logs?.find((log) => Boolean(log.praiseJa?.trim()))
+
+  if (route === 'feedback') {
+    if (latestFeedbackReadyLog) {
+      return {
+        to: `/logs/${latestFeedbackReadyLog.id}?tab=feedback`,
+        label: 'AI 피드백 열기',
+      }
+    }
+
+    return {
+      to: '/logs',
+      label: '로그부터 작성하기',
+    }
+  }
+
+  if (route === 'insight') {
+    if (latestLog) {
+      return {
+        to: `/logs/${latestLog.id}?tab=verbalize`,
+        label: '언어화 열기',
+      }
+    }
+
+    return {
+      to: '/logs',
+      label: '먼저 로그 작성하기',
+    }
+  }
+
+  return {
+    to: '/logs',
+    label: '새 로그 작성하기',
+  }
+}
+
 export function CoachChatPanel() {
   const [message, setMessage] = useState('')
   const chat = useChatAgent()
+  const { data: logs } = useLogs()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!message.trim()) return
     await chat.mutateAsync({ message: message.trim() })
   }
+
+  const routeTarget = chat.data ? buildRouteTarget(chat.data.route, logs) : null
 
   return (
     <div className="space-y-4">
@@ -27,7 +70,7 @@ export function CoachChatPanel() {
           AI Coach
         </p>
         <p className="text-sm leading-relaxed text-text-sub">
-          기록을 어떻게 시작할지, 피드백을 먼저 받을지, 통찰을 먼저 볼지 물어보세요.
+          기록을 어디서 시작할지, 지금 피드백을 받을지, 언어화를 먼저 볼지 물어보세요.
         </p>
       </div>
 
@@ -78,6 +121,17 @@ export function CoachChatPanel() {
               route: {chat.data.route}
             </span>
           </div>
+
+          {routeTarget && (
+            <div className="rounded-lg border border-primary-100 bg-primary-50/60 p-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-primary-600">
+                Recommended Action
+              </p>
+              <Link to={routeTarget.to}>
+                <Button size="sm">{routeTarget.label}</Button>
+              </Link>
+            </div>
+          )}
 
           {chat.data.suggestedActions.length > 0 && (
             <div>
