@@ -1,48 +1,48 @@
-import type { JaCheckPayload, JaCheckResponse } from "./ja-check";
+import type { JaCheckPayload, JaCheckResponse } from './ja-check'
 import type {
   BrainstormResult,
   InsightResult as VerbalizationInsightResult,
   VerbalizationSession,
-} from "./verbalization";
-import type { DashboardStats } from "./stats";
+} from './verbalization'
+import type { DashboardStats } from './stats'
 
-export type AIAgentKind = "chat" | "feedback" | "insight";
+export type AIAgentKind = 'chat' | 'feedback' | 'insight'
 
 export interface FeedbackAgentRunInput {
-  logId: number;
-  praiseJa: string;
+  logId: number
+  praiseJa: string
 }
 
-export type FeedbackAgentPayload = JaCheckPayload;
+export type FeedbackAgentPayload = JaCheckPayload
 
 export interface FeedbackAgentResponse extends JaCheckResponse {
-  agent: "feedback";
+  agent: 'feedback'
 }
 
 export interface ChatAgentInput {
-  message: string;
+  message: string
 }
 
 export interface ChatAgentResponse {
-  agent: "chat";
-  reply: string;
-  intent: "chat" | "feedback" | "insight";
-  route: "chat" | "feedback" | "insight";
-  suggestedActions: string[];
+  agent: 'chat'
+  reply: string
+  intent: 'chat' | 'feedback' | 'insight'
+  route: 'chat' | 'feedback' | 'insight'
+  suggestedActions: string[]
 }
 
 export interface InsightAgentBrainstormInput {
-  logId: number;
-  rawThoughts: string;
-  thinkingDurationMs?: number;
+  logId: number
+  rawThoughts: string
+  thinkingDurationMs?: number
 }
 
 export interface InsightAgentAnswerInput {
-  logId: number;
-  probingAnswer: string;
+  logId: number
+  probingAnswer: string
 }
 
-export type InsightAgentSession = VerbalizationSession;
-export type InsightAgentBrainstormResult = BrainstormResult;
-export type InsightAgentResult = VerbalizationInsightResult;
-export type InsightAgentDashboard = DashboardStats;
+export type InsightAgentSession = VerbalizationSession
+export type InsightAgentBrainstormResult = BrainstormResult
+export type InsightAgentResult = VerbalizationInsightResult
+export type InsightAgentDashboard = DashboardStats
