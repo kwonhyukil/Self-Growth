@@ -1,4 +1,4 @@
-import { useState, Fragment } from 'react'
+import { useEffect, useState, Fragment } from 'react'
 import type { CreateLogBody, GrowthLog, MoodTag } from '@/types'
 import { MOOD_TAGS } from '@/types'
 import { MOOD_EMOJI, MOOD_LABELS, MOOD_FEEDBACK, JA_MIN_LEN, JA_MAX_LEN } from '@/shared/lib/constants'
@@ -15,47 +15,50 @@ interface LogFormProps {
   onCancel?: () => void
   submitLabel?: string
   savedLogId?: number
+  initialStep?: 1 | 2 | 3 | 4
+  autoDraftJa?: boolean
+  onDraftApplied?: () => void
 }
 
-// ── 문자 수 뱃지 ────────────────────────────────────────────────
 function CharCount({ current, max }: { current: number; max: number }) {
   const near = current >= max * 0.85
   const over = current > max
+
   return (
-    <span className={clsx(
-      'text-[10px] tabular-nums transition-colors',
-      over  ? 'text-error-500 font-semibold' :
-      near  ? 'text-warning-500'            : 'text-text-disabled'
-    )}>
+    <span
+      className={clsx(
+        'text-[10px] tabular-nums transition-colors',
+        over ? 'font-semibold text-error-500' : near ? 'text-warning-500' : 'text-text-disabled',
+      )}
+    >
       {current}/{max}
     </span>
   )
 }
 
-// ── 스텝 인디케이터 ─────────────────────────────────────────────
-const STEP_LABELS = ['感情', 'できごと', '自己称賛', '確認']
+const STEP_LABELS = ['気分', 'きっかけ', '振り返り', '確認']
 
 function StepIndicator({ current }: { current: number }) {
   return (
-    <div className="flex items-center mb-6">
+    <div className="mb-6 flex items-center" aria-label={`記録ステップ ${current}/4`}>
       {[1, 2, 3, 4].map((n, i) => (
         <Fragment key={n}>
           <div className="flex flex-col items-center gap-1">
             <div
               className={clsx(
-                'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-all',
+                'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all',
                 current > n
                   ? 'bg-primary-400 text-white'
                   : current === n
-                  ? 'bg-primary-600 text-white ring-2 ring-primary-200 ring-offset-1'
-                  : 'bg-surface-muted text-text-disabled',
+                    ? 'bg-primary-600 text-white ring-2 ring-primary-200 ring-offset-1'
+                    : 'bg-surface-muted text-text-disabled',
               )}
             >
               {current > n ? '✓' : n}
             </div>
             <span
               className={clsx(
-                'text-[10px] font-medium whitespace-nowrap',
+                'whitespace-nowrap text-[10px] font-medium',
                 current === n ? 'text-primary-600' : 'text-text-disabled',
               )}
             >
@@ -65,7 +68,7 @@ function StepIndicator({ current }: { current: number }) {
           {i < 3 && (
             <div
               className={clsx(
-                'flex-1 h-0.5 mx-1 mb-4 transition-colors duration-300',
+                'mx-1 mb-4 h-0.5 flex-1 transition-colors duration-300',
                 current > n ? 'bg-primary-400' : 'bg-border-subtle',
               )}
             />
@@ -76,13 +79,13 @@ function StepIndicator({ current }: { current: number }) {
   )
 }
 
-// ── 확인 화면 행 ────────────────────────────────────────────────
 function ReviewRow({ label, value }: { label: string; value: string | undefined }) {
   if (!value) return null
+
   return (
-    <div className="flex gap-3 py-2.5 border-b border-border-subtle last:border-0">
-      <span className="text-xs font-medium text-text-disabled shrink-0 w-24 pt-0.5">{label}</span>
-      <span className="text-sm text-text-main flex-1 leading-relaxed">{value}</span>
+    <div className="flex gap-3 border-b border-border-subtle py-2.5 last:border-0">
+      <span className="w-24 shrink-0 pt-0.5 text-xs font-medium text-text-disabled">{label}</span>
+      <span className="flex-1 text-sm leading-relaxed text-text-main">{value}</span>
     </div>
   )
 }
@@ -93,24 +96,28 @@ export function LogForm({
   onCancel,
   submitLabel = '保存する',
   savedLogId,
+  initialStep = 1,
+  autoDraftJa = false,
+  onDraftApplied,
 }: LogFormProps) {
-  // ── 폼 상태 ─────────────────────────────────────────────────
-  const [happenedAt,    setHappenedAt]    = useState(initial?.happenedAt ? initial.happenedAt.slice(0, 16) : fmt.isoNow().slice(0, 16))
-  const [moodTag,       setMoodTag]       = useState<MoodTag | undefined>(initial?.moodTag ?? undefined)
+  const [happenedAt, setHappenedAt] = useState(
+    initial?.happenedAt ? initial.happenedAt.slice(0, 16) : fmt.isoNow().slice(0, 16),
+  )
+  const [moodTag, setMoodTag] = useState<MoodTag | undefined>(initial?.moodTag ?? undefined)
   const [moodIntensity, setMoodIntensity] = useState<number>(initial?.moodIntensity ?? 3)
-  const [triggerKo,     setTriggerKo]     = useState(initial?.triggerKo ?? '')
+  const [triggerKo, setTriggerKo] = useState(initial?.triggerKo ?? '')
   const [specificEvent, setSpecificEvent] = useState(initial?.specificEvent ?? '')
-  const [praiseKo,      setPraiseKo]      = useState(initial?.praiseKo ?? '')
-  const [praiseJa,      setPraiseJa]      = useState(initial?.praiseJa ?? '')
+  const [praiseKo, setPraiseKo] = useState(initial?.praiseKo ?? '')
+  const [praiseJa, setPraiseJa] = useState(initial?.praiseJa ?? '')
 
-  const [step,         setStep]         = useState<1|2|3|4>(1)
-  const [error,        setError]        = useState<unknown>(null)
-  const [loading,      setLoading]      = useState(false)
-  const [drafting,     setDrafting]     = useState(false)
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(initialStep)
+  const [error, setError] = useState<unknown>(null)
+  const [loading, setLoading] = useState(false)
+  const [drafting, setDrafting] = useState(false)
   const [draftSuccess, setDraftSuccess] = useState(false)
+  const [autoDraftDone, setAutoDraftDone] = useState(false)
 
-  // ── 유효성 ──────────────────────────────────────────────────
-  const jaLen     = praiseJa.length
+  const jaLen = praiseJa.length
   const jaInvalid = jaLen > 0 && (jaLen < JA_MIN_LEN || jaLen > JA_MAX_LEN)
   const canSubmit = !!moodTag && triggerKo.trim().length > 0 && praiseKo.trim().length > 0 && !jaInvalid
 
@@ -120,21 +127,22 @@ export function LogForm({
     step === 3 ? praiseKo.trim().length > 0 && !jaInvalid :
     true
 
-  // ── 핸들러 ──────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!canSubmit || !moodTag) return
+
     setError(null)
     setLoading(true)
+
     try {
       await onSubmit({
-        happenedAt:    new Date(happenedAt).toISOString(),
+        happenedAt: new Date(happenedAt).toISOString(),
         moodTag,
         moodIntensity,
-        triggerKo:     triggerKo.trim(),
+        triggerKo: triggerKo.trim(),
         specificEvent: specificEvent.trim() || undefined,
-        praiseKo:      praiseKo.trim(),
-        praiseJa:      praiseJa.trim() || undefined,
+        praiseKo: praiseKo.trim(),
+        praiseJa: praiseJa.trim() || undefined,
       })
     } catch (err) {
       setError(err)
@@ -145,12 +153,16 @@ export function LogForm({
 
   const handleDraftJa = async () => {
     if (!savedLogId) return
+
+    setError(null)
     setDrafting(true)
     setDraftSuccess(false)
+
     try {
       const draft = await logsApi.draftJa(savedLogId)
       setPraiseJa(draft)
       setDraftSuccess(true)
+      onDraftApplied?.()
       setTimeout(() => setDraftSuccess(false), 3000)
     } catch (err) {
       setError(err)
@@ -159,25 +171,29 @@ export function LogForm({
     }
   }
 
-  const goNext = () => setStep((s) => (s < 4 ? ((s + 1) as 1|2|3|4) : s))
-  const goPrev = () => setStep((s) => (s > 1 ? ((s - 1) as 1|2|3|4) : s))
+  useEffect(() => {
+    if (!autoDraftJa || autoDraftDone || !savedLogId) return
+    if (!praiseKo.trim() || praiseJa.trim()) return
+
+    setAutoDraftDone(true)
+    void handleDraftJa()
+  }, [autoDraftJa, autoDraftDone, praiseKo, praiseJa, savedLogId])
+
+  const goNext = () => setStep((current) => (current < 4 ? ((current + 1) as 1 | 2 | 3 | 4) : current))
+  const goPrev = () => setStep((current) => (current > 1 ? ((current - 1) as 1 | 2 | 3 | 4) : current))
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* ── 스텝 인디케이터 ── */}
       <StepIndicator current={step} />
 
-      {/* ── 스텝 콘텐츠 ── */}
       <div className="space-y-6 animate-fade-in" key={step}>
-
-        {/* STEP 1: 감정 선택 */}
         {step === 1 && (
           <>
-            <p className="text-sm text-text-soft text-center -mt-2 mb-4">
-              今の気持ちに近いものを選んでください
+            <p className="mb-4 -mt-2 text-center text-sm text-text-soft">
+              まずは、今日の記録にいちばん近い気分を選びましょう。
             </p>
             <Input
-              label="いつのこと？"
+              label="記録した時間"
               type="datetime-local"
               value={happenedAt}
               onChange={(e) => setHappenedAt(e.target.value)}
@@ -185,13 +201,15 @@ export function LogForm({
             />
 
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-text-sub">気分は？</p>
+              <p className="text-sm font-semibold text-text-sub">今の気分</p>
               <div className="grid grid-cols-5 gap-2">
                 {MOOD_TAGS.map((m: MoodTag) => (
                   <button
                     key={m}
                     type="button"
                     onClick={() => setMoodTag(m)}
+                    aria-pressed={moodTag === m}
+                    aria-label={`${MOOD_LABELS[m]} を選択`}
                     className={clsx(
                       'flex flex-col items-center gap-0.5 rounded-xl border p-2.5 text-xs font-medium transition-all duration-150',
                       moodTag === m
@@ -204,9 +222,8 @@ export function LogForm({
                   </button>
                 ))}
               </div>
-              {/* 감정 피드백 문구 */}
               {moodTag && (
-                <p className="text-xs text-primary-600 animate-fade-in mt-1.5 text-center">
+                <p className="mt-1.5 animate-fade-in text-center text-xs text-primary-600">
                   {MOOD_FEEDBACK[moodTag]}
                 </p>
               )}
@@ -214,50 +231,53 @@ export function LogForm({
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-semibold text-text-sub">
-                  感情の強さ
-                  <span className="ml-1.5 text-xs font-normal text-text-disabled">どのくらい強く感じましたか？</span>
+                <label id="mood-intensity-label" className="text-sm font-semibold text-text-sub">
+                  気持ちの強さ
+                  <span className="ml-1.5 text-xs font-normal text-text-disabled">1〜5で選択</span>
                 </label>
-                <span className="text-sm tracking-wider" aria-label={`${moodIntensity}段階`}>
+                <span className="text-sm tracking-wider" aria-label={`気持ちの強さ ${moodIntensity}/5`}>
                   {'★'.repeat(moodIntensity)}
-                  <span className="text-border">{'★'.repeat(5 - moodIntensity)}</span>
+                  <span className="text-border">{'☆'.repeat(5 - moodIntensity)}</span>
                 </span>
               </div>
               <input
                 type="range"
-                min={1} max={5} step={1}
+                min={1}
+                max={5}
+                step={1}
                 value={moodIntensity}
                 onChange={(e) => setMoodIntensity(Number(e.target.value))}
-                className="w-full h-1.5 accent-primary-500 cursor-pointer"
+                aria-labelledby="mood-intensity-label"
+                className="h-1.5 w-full cursor-pointer accent-primary-500"
               />
               <div className="flex justify-between text-[10px] text-text-disabled">
                 <span>穏やか</span>
-                <span>強烈</span>
+                <span>強い</span>
               </div>
             </div>
           </>
         )}
 
-        {/* STEP 2: 상황 정리 */}
         {step === 2 && (
           <>
-            <p className="text-sm text-text-soft text-center -mt-2 mb-4">
-              どんなことがあったのかを簡単に書いてみましょう
+            <p className="mb-4 -mt-2 text-center text-sm text-text-soft">
+              今日の気持ちにつながった出来事を、そのまま書き出してください。
             </p>
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-semibold text-text-sub">
-                  きっかけ・状況
+                  きっかけになった出来事
                   <span className="ml-1.5 text-xs font-normal text-error-500">必須</span>
                 </label>
                 <CharCount current={triggerKo.length} max={200} />
               </div>
               <Textarea
-                placeholder="今日、発表でうまく話せた。先生に褒めてもらった…"
+                placeholder="どんな出来事が心に残りましたか？短くても大丈夫です。"
                 value={triggerKo}
                 onChange={(e) => setTriggerKo(e.target.value)}
                 rows={3}
-                maxLength={200}
+                maxChars={200}
+                charCount={triggerKo.length}
                 required
               />
             </div>
@@ -265,43 +285,43 @@ export function LogForm({
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-semibold text-text-sub">
-                  具体的なできごと
+                  もう少し詳しく
                   <span className="ml-1.5 text-xs font-normal text-text-disabled">
-                    任意 — AIがより深く分析できます
+                    相手・場所・会話など、必要なら補足してください
                   </span>
                 </label>
                 {specificEvent.length > 0 && <CharCount current={specificEvent.length} max={500} />}
               </div>
               <Textarea
-                placeholder="発表の直前、声が震えた。でも最初の一言を言えたら落ち着いた。"
+                placeholder="あとで自分で読み返したときに思い出しやすい情報があれば書いておきましょう。"
                 value={specificEvent}
                 onChange={(e) => setSpecificEvent(e.target.value)}
                 rows={3}
-                maxLength={500}
+                maxChars={500}
+                charCount={specificEvent.length}
               />
               {!specificEvent && (
-                <p className="text-[11px] text-text-disabled flex items-center gap-1">
+                <p className="flex items-center gap-1 text-[11px] text-text-disabled">
                   <span>💡</span>
-                  入力すると言語化プロセスの精度が上がります
+                  任意入力です。ここは空欄でも先に進めます。
                 </p>
               )}
             </div>
           </>
         )}
 
-        {/* STEP 3: 자기 칭찬 */}
         {step === 3 && (
           <>
-            <p className="text-sm text-text-soft text-center -mt-2 mb-4">
-              今日の自分を優しく褒めてみましょう
+            <p className="mb-4 -mt-2 text-center text-sm text-text-soft">
+              自分にかけたいひと言をまとめてから、日本語の振り返りにつなげます。
             </p>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-text-sub">自己称賛（母語）</span>
+                <span className="text-sm font-semibold text-text-sub">自分にかけたいひと言（韓国語）</span>
                 <span className="text-xs text-error-500">必須</span>
               </div>
               <Textarea
-                placeholder="나는 오늘 발표를 잘 해냈어. 긴장했지만 끝까지 했다！"
+                placeholder="たとえば: 緊張していても最後まで話し切れた自分を認めたい。"
                 value={praiseKo}
                 onChange={(e) => setPraiseKo(e.target.value)}
                 rows={3}
@@ -312,8 +332,10 @@ export function LogForm({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-semibold text-text-sub">
-                  自己称賛（日本語）
-                  <span className="ml-1.5 text-xs font-normal text-text-disabled">任意 — AIが下書きを作れます</span>
+                  日本語での振り返り
+                  <span className="ml-1.5 text-xs font-normal text-text-disabled">
+                    保存後はAIの下書きを使って整えられます
+                  </span>
                 </label>
 
                 {savedLogId && (
@@ -322,21 +344,21 @@ export function LogForm({
                     onClick={handleDraftJa}
                     disabled={drafting || !praiseKo.trim()}
                     className={clsx(
-                      'flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-semibold transition-all border',
+                      'flex items-center gap-1.5 rounded-lg border px-3 py-1 text-xs font-semibold transition-all',
                       draftSuccess
                         ? 'border-success-300 bg-success-50 text-success-700'
-                        : 'border-primary-200 bg-primary-50 text-primary-600 hover:bg-primary-100 disabled:opacity-40 disabled:cursor-not-allowed',
+                        : 'border-primary-200 bg-primary-50 text-primary-600 hover:bg-primary-100 disabled:cursor-not-allowed disabled:opacity-40',
                     )}
                   >
                     {drafting ? (
                       <>
                         <span className="h-3 w-3 animate-spin rounded-full border-2 border-primary-400 border-t-transparent" />
-                        生成中…
+                        生成中...
                       </>
                     ) : draftSuccess ? (
-                      <>✓ 下書き完了</>
+                      <>下書きを反映しました</>
                     ) : (
-                      <>✨ AI下書き</>
+                      <>AIで下書き</>
                     )}
                   </button>
                 )}
@@ -344,11 +366,15 @@ export function LogForm({
 
               <div className="relative">
                 <Textarea
-                  placeholder="今日の発表、緊張したけど最後まで頑張った！（任意）"
+                  placeholder="日本語で書けるところまで書いてください。あとからAI下書きやフィードバックで整えられます。"
                   value={praiseJa}
                   onChange={(e) => setPraiseJa(e.target.value)}
                   rows={3}
-                  error={jaInvalid ? `${JA_MIN_LEN}〜${JA_MAX_LEN}文字にしてください（現在 ${jaLen} 文字）` : undefined}
+                  error={
+                    jaInvalid
+                      ? `${JA_MIN_LEN}〜${JA_MAX_LEN}文字にしてください（現在 ${jaLen} 文字）`
+                      : undefined
+                  }
                 />
                 {jaLen > 0 && (
                   <div className="absolute bottom-2.5 right-3">
@@ -358,37 +384,37 @@ export function LogForm({
               </div>
 
               {!praiseJa && (
-                <p className="text-[11px] text-text-disabled flex items-center gap-1">
+                <p className="flex items-center gap-1 text-[11px] text-text-disabled">
                   <span>💡</span>
-                  日本語を入力するとAIフィードバックが使えます。後で追加もOK！
+                  いまは空欄でも大丈夫です。保存後、この画面で日本語の下書きを自動生成できます。
                 </p>
               )}
             </div>
           </>
         )}
 
-        {/* STEP 4: 확인 & 저장 */}
         {step === 4 && (
           <div>
-            <p className="text-sm text-text-soft text-center -mt-2 mb-4">内容を確認して保存します</p>
-            <div className="rounded-xl bg-surface-subtle border border-border-subtle p-4">
+            <p className="mb-4 -mt-2 text-center text-sm text-text-soft">
+              保存前に内容を確認しましょう。あとから編集もできます。
+            </p>
+            <div className="rounded-xl border border-border-subtle bg-surface-subtle p-4">
               <ReviewRow label="日時" value={happenedAt.replace('T', ' ')} />
               <ReviewRow
                 label="気分"
                 value={moodTag ? `${MOOD_EMOJI[moodTag]} ${MOOD_LABELS[moodTag]}` : undefined}
               />
-              <ReviewRow label="感情の強さ" value={'★'.repeat(moodIntensity) + '☆'.repeat(5 - moodIntensity)} />
+              <ReviewRow label="強さ" value={'★'.repeat(moodIntensity) + '☆'.repeat(5 - moodIntensity)} />
               <ReviewRow label="きっかけ" value={triggerKo} />
-              {specificEvent && <ReviewRow label="できごと" value={specificEvent} />}
-              <ReviewRow label="称賛（母語）" value={praiseKo} />
-              {praiseJa && <ReviewRow label="称賛（日本語）" value={praiseJa} />}
+              {specificEvent && <ReviewRow label="補足" value={specificEvent} />}
+              <ReviewRow label="韓国語" value={praiseKo} />
+              {praiseJa && <ReviewRow label="日本語" value={praiseJa} />}
             </div>
             {error !== null && <ErrorMessage error={error} className="mt-4" />}
           </div>
         )}
       </div>
 
-      {/* ── sticky 하단 네비게이션 ── */}
       <div className="sticky bottom-0 -mx-6 -mb-6 mt-6 flex items-center justify-between gap-3 border-t border-border-subtle bg-surface-elevated px-6 py-4">
         {step > 1 ? (
           <Button type="button" variant="ghost" onClick={goPrev}>
@@ -397,7 +423,7 @@ export function LogForm({
         ) : (
           onCancel && (
             <Button type="button" variant="secondary" onClick={onCancel}>
-              キャンセル
+              閉じる
             </Button>
           )
         )}
@@ -405,7 +431,7 @@ export function LogForm({
         <div className="ml-auto">
           {step < 4 ? (
             <Button type="button" onClick={goNext} disabled={!stepValid}>
-              次へ →
+              次へ
             </Button>
           ) : (
             <Button type="submit" isLoading={loading} disabled={!canSubmit}>

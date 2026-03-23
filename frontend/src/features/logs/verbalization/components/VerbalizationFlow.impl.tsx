@@ -124,14 +124,22 @@ export function VerbalizationFlow({ logId }: Props) {
   const [timerDone, setTimerDone] = useState(false)
   const [startMs, setStartMs] = useState<number | null>(null)
   const [error, setError] = useState<unknown>(null)
+  const [restartRequested, setRestartRequested] = useState(false)
 
   // Resume state from existing session
   useEffect(() => {
+    if (restartRequested) return
     if (session) {
       if (session.rawThoughts) setRawThoughts(session.rawThoughts)
       if (session.probingAnswer) setProbingAnswer(session.probingAnswer)
     }
-  }, [session?.id]) // eslint-disable-line
+  }, [restartRequested, session?.id]) // eslint-disable-line
+
+  useEffect(() => {
+    if (restartRequested && session?.completedSteps !== 3) {
+      setRestartRequested(false)
+    }
+  }, [restartRequested, session?.completedSteps])
 
   if (isLoading) return (
     <div className="flex justify-center py-8">
@@ -139,11 +147,8 @@ export function VerbalizationFlow({ logId }: Props) {
     </div>
   )
 
-  // Derive current step from session
-  const step = !session ? 2 : session.completedSteps >= 3 ? 3 : session.probingQuestion ? 2 : 2
-
   // If fully done, show result
-  const isDone = session?.completedSteps === 3
+  const isDone = !restartRequested && session?.completedSteps === 3
 
   const handleStartTimer = () => {
     setTimerStarted(true)
@@ -156,6 +161,7 @@ export function VerbalizationFlow({ logId }: Props) {
     const duration = startMs ? Date.now() - startMs : undefined
     try {
       await brainstorm.mutateAsync({ rawThoughts: rawThoughts.trim(), thinkingDurationMs: duration })
+      setRestartRequested(false)
     } catch (e) {
       setError(e)
     }
@@ -177,13 +183,23 @@ export function VerbalizationFlow({ logId }: Props) {
       <div className="flex items-center gap-4">
         <StepBadge n={1} label="記録" active={false} done={true} />
         <div className="h-px flex-1 bg-slate-200" />
-        <StepBadge n={2} label="ブレインストーム" active={!isDone && (!session || !session.aiInsightJa)} done={isDone || !!session?.aiInsightJa} />
+        <StepBadge
+          n={2}
+          label="ブレインストーム"
+          active={!isDone && (restartRequested || !session || !session.aiInsightJa)}
+          done={isDone || (!!session?.aiInsightJa && !restartRequested)}
+        />
         <div className="h-px flex-1 bg-slate-200" />
-        <StepBadge n={3} label="インサイト" active={!isDone && !!session?.probingQuestion} done={isDone} />
+        <StepBadge
+          n={3}
+          label="インサイト"
+          active={!isDone && !restartRequested && !!session?.probingQuestion}
+          done={isDone}
+        />
       </div>
 
       {/* ── Step 2: Brainstorm ── */}
-      {(!session || (session.completedSteps < 3 && !session.probingQuestion)) && (
+      {(restartRequested || !session || (session.completedSteps < 3 && !session.probingQuestion)) && (
         <div className="space-y-4">
           <div className="rounded-xl bg-amber-50 border border-amber-200 p-4">
             <p className="text-sm font-semibold text-amber-800 mb-1">🧠 3分ブレインダンプ</p>
@@ -309,12 +325,14 @@ export function VerbalizationFlow({ logId }: Props) {
             onClick={() => {
               setRawThoughts('')
               setProbingAnswer('')
+              setError(null)
+              setRestartRequested(true)
               setTimerStarted(false)
               setTimerDone(false)
               setStartMs(null)
             }}
           >
-            もう一度やり直す
+            もう一度最初からやる
           </Button>
         </div>
       )}

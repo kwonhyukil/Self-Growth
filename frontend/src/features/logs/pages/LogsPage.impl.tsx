@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useLogs, useCreateLog } from '@/features/logs/queries'
 import { LogCard } from '@/features/logs/components/LogCard'
 import { LogForm } from '@/features/logs/components/LogForm'
@@ -10,6 +11,7 @@ import { Badge } from '@/shared/ui/Badge'
 import type { CreateLogBody } from '@/types'
 
 export function LogsPage() {
+  const navigate = useNavigate()
   const [showForm, setShowForm] = useState(false)
   const { data: logs, isLoading, error } = useLogs()
   const createLog = useCreateLog()
@@ -17,17 +19,19 @@ export function LogsPage() {
   const isEmpty = !logs || logs.length === 0
 
   const handleCreate = async (body: CreateLogBody) => {
-    await createLog.mutateAsync(body)
+    const created = await createLog.mutateAsync(body)
     setShowForm(false)
+    navigate(`/logs/${created.id}?tab=edit&created=1&draftJa=1`)
   }
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Page header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-text-main">成長ログ</h1>
-          <p className="text-sm text-text-soft mt-0.5">あなたの成長の軌跡を記録しましょう</p>
+          <h1 className="text-xl font-bold text-text-main">ログ</h1>
+          <p className="mt-0.5 text-sm text-text-soft">
+            今日の出来事と気持ちを書き留めて、AIコーチと次の一歩につなげましょう。
+          </p>
         </div>
         <Button
           onClick={() => setShowForm(true)}
@@ -38,7 +42,6 @@ export function LogsPage() {
         </Button>
       </div>
 
-      {/* Content */}
       {isLoading && (
         <div className="flex justify-center py-12">
           <Spinner size="lg" />
@@ -56,50 +59,49 @@ export function LogsPage() {
               ))}
             </div>
           ) : (
-            /* ── 가이드형 Empty State ── */
             <div className="rounded-2xl border border-dashed border-border bg-surface-elevated p-10 text-center animate-fade-in">
-              <div className="text-5xl mb-4">📝</div>
+              <div className="mb-4 text-5xl">📝</div>
               <h3 className="text-base font-bold text-text-main">まだログがありません</h3>
               <p className="mt-1.5 text-sm text-text-sub">
-                今日の出来事や感情を1つ記録してみましょう
+                きっかけと自分へのひと言を書くだけで、最初の記録を始められます。
               </p>
               <p className="mt-1 text-xs text-text-soft">
-                小さな記録が日本語表現と自己理解につながります
+                保存したあと、自動で編集画面に移動して日本語の下書きやAIフィードバックへ進めます。
               </p>
 
-              {/* 샘플 로그 미리보기 */}
-              <div className="mt-6 rounded-xl bg-surface-subtle border border-border-subtle p-4 text-left max-w-sm mx-auto">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="mx-auto mt-6 max-w-sm rounded-xl border border-border-subtle bg-surface-subtle p-4 text-left">
+                <div className="mb-2 flex items-center gap-2">
                   <Badge>😊 喜び</Badge>
-                  <span className="text-xs text-text-disabled">記録の例</span>
+                  <span className="text-xs text-text-disabled">今日の記録例</span>
                 </div>
                 <p className="text-sm text-text-sub line-clamp-2">
-                  発表を最後までやり切った
+                  発表は緊張したけれど、最後まで自分の考えを伝え切れた。
                 </p>
-                <p className="mt-2 text-sm text-primary-600 italic leading-relaxed">
-                  「緊張しても最後まで続けた自分を褒めたい」
+                <p className="mt-2 text-sm italic leading-relaxed text-primary-600">
+                  緊張していても最後まで話し切れた自分を認めたい。
                 </p>
               </div>
 
               <Button className="mt-6" size="lg" onClick={() => setShowForm(true)}>
-                最初のログを作成
+                最初のログを書く
               </Button>
             </div>
           )}
         </>
       )}
 
-      {/* Create modal */}
       <Modal
         open={showForm}
         onClose={() => setShowForm(false)}
-        title="新しい成長ログ"
+        title="新しいログを書く"
         size="lg"
+        closeOnBackdrop={false}
+        closeOnEscape={false}
       >
         <LogForm
           onSubmit={handleCreate}
           onCancel={() => setShowForm(false)}
-          submitLabel="ログを記録する"
+          submitLabel="保存して次へ"
         />
       </Modal>
     </div>

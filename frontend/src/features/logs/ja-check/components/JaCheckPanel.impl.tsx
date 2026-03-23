@@ -26,6 +26,20 @@ export function JaCheckPanel({ log }: JaCheckPanelProps) {
   const runCheck = useRunJaCheck(log.id)
   const [showRewrite, setShowRewrite] = useState(false)
 
+  if (!log.praiseJa?.trim()) {
+    return (
+      <div className="space-y-4 rounded-xl border border-dashed border-border bg-surface-subtle p-6 text-center">
+        <div className="text-3xl">✍️</div>
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-text-main">日本語の振り返りを追加するとAIフィードバックを受けられます</p>
+          <p className="text-sm text-text-sub">
+            まずは編集タブで日本語の文を入力するか、AI下書きを使って出発点を作ってください。
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   if (latestLoading) {
     return (
       <div className="flex items-center justify-center py-10">

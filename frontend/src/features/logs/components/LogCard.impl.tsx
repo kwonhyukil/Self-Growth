@@ -23,7 +23,13 @@ export function LogCard({ log }: LogCardProps) {
 
       <div className="rounded-panel border border-border-subtle bg-surface-subtle px-4 py-3">
         <p className="mb-1 text-caption text-text-soft">日本語の振り返り</p>
-        <p className="line-clamp-2 text-bodySm font-medium text-text-main">{log.praiseJa}</p>
+        {log.praiseJa ? (
+          <p className="line-clamp-2 text-bodySm font-medium text-text-main">{log.praiseJa}</p>
+        ) : (
+          <p className="line-clamp-2 text-bodySm italic text-text-disabled">
+            まだ日本語の振り返りはありません
+          </p>
+        )}
       </div>
 
       <div className="mt-4 flex items-center justify-between text-caption">
