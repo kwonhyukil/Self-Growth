@@ -65,12 +65,12 @@ export function CoachChatPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-primary-100 bg-primary-50/50 p-4">
+      <div className="rounded-[1.4rem] border border-primary-100 bg-primary-50/50 p-4">
         <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-primary-600">
           AI Coach
         </p>
         <p className="text-sm leading-relaxed text-text-sub">
-          기록을 어디서 시작할지, 지금 피드백을 받을지, 언어화를 먼저 볼지 물어보세요.
+          기록을 어디서 시작할지, 지금 피드백을 받을지, 언어화를 먼저 볼지 코치에게 물어보세요.
         </p>
       </div>
 
@@ -105,7 +105,7 @@ export function CoachChatPanel() {
       {chat.error && <ErrorMessage error={chat.error} />}
 
       {chat.data && (
-        <div className="space-y-3 rounded-xl border border-border-subtle bg-surface-subtle p-4">
+        <div className="space-y-3 rounded-[1.4rem] border border-border-subtle bg-surface-subtle p-4">
           <div>
             <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-text-disabled">
               Reply

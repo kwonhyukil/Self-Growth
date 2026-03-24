@@ -36,11 +36,11 @@ function CharCount({ current, max }: { current: number; max: number }) {
   )
 }
 
-const STEP_LABELS = ['気分', 'きっかけ', '振り返り', '確認']
+const STEP_LABELS = ['감정', '사건', '문장', '확인']
 
 function StepIndicator({ current }: { current: number }) {
   return (
-    <div className="mb-6 flex items-center" aria-label={`記録ステップ ${current}/4`}>
+    <div className="mb-6 flex items-center" aria-label={`기록 단계 ${current}/4`}>
       {[1, 2, 3, 4].map((n, i) => (
         <Fragment key={n}>
           <div className="flex flex-col items-center gap-1">
@@ -94,7 +94,7 @@ export function LogForm({
   initial,
   onSubmit,
   onCancel,
-  submitLabel = '保存する',
+  submitLabel = '저장하기',
   savedLogId,
   initialStep = 1,
   autoDraftJa = false,
@@ -190,10 +190,10 @@ export function LogForm({
         {step === 1 && (
           <>
             <p className="mb-4 -mt-2 text-center text-sm text-text-soft">
-              まずは、今日の記録にいちばん近い気分を選びましょう。
+              먼저 오늘 기록의 분위기를 가장 잘 설명하는 감정을 골라보세요.
             </p>
             <Input
-              label="記録した時間"
+              label="기록 시간"
               type="datetime-local"
               value={happenedAt}
               onChange={(e) => setHappenedAt(e.target.value)}
@@ -201,7 +201,7 @@ export function LogForm({
             />
 
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-text-sub">今の気分</p>
+              <p className="text-sm font-semibold text-text-sub">지금의 감정</p>
               <div className="grid grid-cols-5 gap-2">
                 {MOOD_TAGS.map((m: MoodTag) => (
                   <button
@@ -209,7 +209,7 @@ export function LogForm({
                     type="button"
                     onClick={() => setMoodTag(m)}
                     aria-pressed={moodTag === m}
-                    aria-label={`${MOOD_LABELS[m]} を選択`}
+                    aria-label={`${MOOD_LABELS[m]} 선택`}
                     className={clsx(
                       'flex flex-col items-center gap-0.5 rounded-xl border p-2.5 text-xs font-medium transition-all duration-150',
                       moodTag === m
@@ -232,10 +232,10 @@ export function LogForm({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label id="mood-intensity-label" className="text-sm font-semibold text-text-sub">
-                  気持ちの強さ
-                  <span className="ml-1.5 text-xs font-normal text-text-disabled">1〜5で選択</span>
+                  감정의 강도
+                  <span className="ml-1.5 text-xs font-normal text-text-disabled">1부터 5까지</span>
                 </label>
-                <span className="text-sm tracking-wider" aria-label={`気持ちの強さ ${moodIntensity}/5`}>
+                <span className="text-sm tracking-wider" aria-label={`감정의 강도 ${moodIntensity}/5`}>
                   {'★'.repeat(moodIntensity)}
                   <span className="text-border">{'☆'.repeat(5 - moodIntensity)}</span>
                 </span>
@@ -251,8 +251,8 @@ export function LogForm({
                 className="h-1.5 w-full cursor-pointer accent-primary-500"
               />
               <div className="flex justify-between text-[10px] text-text-disabled">
-                <span>穏やか</span>
-                <span>強い</span>
+                <span>잔잔함</span>
+                <span>강함</span>
               </div>
             </div>
           </>
@@ -261,18 +261,18 @@ export function LogForm({
         {step === 2 && (
           <>
             <p className="mb-4 -mt-2 text-center text-sm text-text-soft">
-              今日の気持ちにつながった出来事を、そのまま書き出してください。
+              그 감정을 만들었던 사건이나 장면을 짧게 적어보세요.
             </p>
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-semibold text-text-sub">
-                  きっかけになった出来事
-                  <span className="ml-1.5 text-xs font-normal text-error-500">必須</span>
+                  어떤 일이 있었나요?
+                  <span className="ml-1.5 text-xs font-normal text-error-500">필수</span>
                 </label>
                 <CharCount current={triggerKo.length} max={200} />
               </div>
               <Textarea
-                placeholder="どんな出来事が心に残りましたか？短くても大丈夫です。"
+                placeholder="예: 발표를 마쳤고, 생각보다 차분하게 끝낼 수 있었다."
                 value={triggerKo}
                 onChange={(e) => setTriggerKo(e.target.value)}
                 rows={3}
@@ -285,15 +285,15 @@ export function LogForm({
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-semibold text-text-sub">
-                  もう少し詳しく
+                  더 구체적으로 적기
                   <span className="ml-1.5 text-xs font-normal text-text-disabled">
-                    相手・場所・会話など、必要なら補足してください
+                    상대, 장소, 대화 등 필요한 정보만 덧붙이세요
                   </span>
                 </label>
                 {specificEvent.length > 0 && <CharCount current={specificEvent.length} max={500} />}
               </div>
               <Textarea
-                placeholder="あとで自分で読み返したときに思い出しやすい情報があれば書いておきましょう。"
+                placeholder="예: 발표가 끝난 뒤 친구가 수고했다고 말해줬다."
                 value={specificEvent}
                 onChange={(e) => setSpecificEvent(e.target.value)}
                 rows={3}
@@ -303,7 +303,7 @@ export function LogForm({
               {!specificEvent && (
                 <p className="flex items-center gap-1 text-[11px] text-text-disabled">
                   <span>💡</span>
-                  任意入力です。ここは空欄でも先に進めます。
+                  이 항목은 선택사항입니다. 비워두고 다음으로 가도 됩니다.
                 </p>
               )}
             </div>
@@ -313,15 +313,15 @@ export function LogForm({
         {step === 3 && (
           <>
             <p className="mb-4 -mt-2 text-center text-sm text-text-soft">
-              自分にかけたいひと言をまとめてから、日本語の振り返りにつなげます。
+              먼저 한국어로 나를 격려하는 문장을 적고, 이어서 일본어 문장으로 확장해보세요.
             </p>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-text-sub">自分にかけたいひと言（韓国語）</span>
-                <span className="text-xs text-error-500">必須</span>
+                <span className="text-sm font-semibold text-text-sub">자기 칭찬 문장 (한국어)</span>
+                <span className="text-xs text-error-500">필수</span>
               </div>
               <Textarea
-                placeholder="たとえば: 緊張していても最後まで話し切れた自分を認めたい。"
+                placeholder="예: 긴장했어도 끝까지 말한 나를 인정해주고 싶다."
                 value={praiseKo}
                 onChange={(e) => setPraiseKo(e.target.value)}
                 rows={3}
@@ -332,9 +332,9 @@ export function LogForm({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-semibold text-text-sub">
-                  日本語での振り返り
+                  자기 표현 문장 (일본어)
                   <span className="ml-1.5 text-xs font-normal text-text-disabled">
-                    保存後はAIの下書きを使って整えられます
+                    저장 후 AI 초안을 만들어서 시작할 수도 있습니다
                   </span>
                 </label>
 
@@ -353,12 +353,12 @@ export function LogForm({
                     {drafting ? (
                       <>
                         <span className="h-3 w-3 animate-spin rounded-full border-2 border-primary-400 border-t-transparent" />
-                        生成中...
+                        생성 중...
                       </>
                     ) : draftSuccess ? (
-                      <>下書きを反映しました</>
+                      <>초안 적용 완료</>
                     ) : (
-                      <>AIで下書き</>
+                      <>AI 초안 만들기</>
                     )}
                   </button>
                 )}
@@ -366,13 +366,13 @@ export function LogForm({
 
               <div className="relative">
                 <Textarea
-                  placeholder="日本語で書けるところまで書いてください。あとからAI下書きやフィードバックで整えられます。"
+                  placeholder="직접 일본어로 적어보거나, 저장 후 AI 초안부터 받아 시작해보세요."
                   value={praiseJa}
                   onChange={(e) => setPraiseJa(e.target.value)}
                   rows={3}
                   error={
                     jaInvalid
-                      ? `${JA_MIN_LEN}〜${JA_MAX_LEN}文字にしてください（現在 ${jaLen} 文字）`
+                      ? `${JA_MIN_LEN}〜${JA_MAX_LEN}자 범위로 맞춰주세요 (현재 ${jaLen}자)`
                       : undefined
                   }
                 />
@@ -386,7 +386,7 @@ export function LogForm({
               {!praiseJa && (
                 <p className="flex items-center gap-1 text-[11px] text-text-disabled">
                   <span>💡</span>
-                  いまは空欄でも大丈夫です。保存後、この画面で日本語の下書きを自動生成できます。
+                  아직 일본어 문장이 없어도 괜찮습니다. 저장 후 AI 초안을 만든 다음 Feedback Agent로 이어갈 수 있습니다.
                 </p>
               )}
             </div>
@@ -396,19 +396,19 @@ export function LogForm({
         {step === 4 && (
           <div>
             <p className="mb-4 -mt-2 text-center text-sm text-text-soft">
-              保存前に内容を確認しましょう。あとから編集もできます。
+              저장 전 내용을 한 번 더 확인해보세요.
             </p>
             <div className="rounded-xl border border-border-subtle bg-surface-subtle p-4">
-              <ReviewRow label="日時" value={happenedAt.replace('T', ' ')} />
+              <ReviewRow label="시간" value={happenedAt.replace('T', ' ')} />
               <ReviewRow
-                label="気分"
+                label="감정"
                 value={moodTag ? `${MOOD_EMOJI[moodTag]} ${MOOD_LABELS[moodTag]}` : undefined}
               />
-              <ReviewRow label="強さ" value={'★'.repeat(moodIntensity) + '☆'.repeat(5 - moodIntensity)} />
-              <ReviewRow label="きっかけ" value={triggerKo} />
-              {specificEvent && <ReviewRow label="補足" value={specificEvent} />}
-              <ReviewRow label="韓国語" value={praiseKo} />
-              {praiseJa && <ReviewRow label="日本語" value={praiseJa} />}
+              <ReviewRow label="강도" value={'★'.repeat(moodIntensity) + '☆'.repeat(5 - moodIntensity)} />
+              <ReviewRow label="사건" value={triggerKo} />
+              {specificEvent && <ReviewRow label="보충" value={specificEvent} />}
+              <ReviewRow label="한국어" value={praiseKo} />
+              {praiseJa && <ReviewRow label="일본어" value={praiseJa} />}
             </div>
             {error !== null && <ErrorMessage error={error} className="mt-4" />}
           </div>
@@ -418,12 +418,12 @@ export function LogForm({
       <div className="sticky bottom-0 -mx-6 -mb-6 mt-6 flex items-center justify-between gap-3 border-t border-border-subtle bg-surface-elevated px-6 py-4">
         {step > 1 ? (
           <Button type="button" variant="ghost" onClick={goPrev}>
-            戻る
+            이전
           </Button>
         ) : (
           onCancel && (
             <Button type="button" variant="secondary" onClick={onCancel}>
-              閉じる
+              닫기
             </Button>
           )
         )}
@@ -431,7 +431,7 @@ export function LogForm({
         <div className="ml-auto">
           {step < 4 ? (
             <Button type="button" onClick={goNext} disabled={!stepValid}>
-              次へ
+              다음
             </Button>
           ) : (
             <Button type="submit" isLoading={loading} disabled={!canSubmit}>

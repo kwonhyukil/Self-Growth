@@ -29,11 +29,11 @@ export function JaCheckPanel({ log }: JaCheckPanelProps) {
   if (!log.praiseJa?.trim()) {
     return (
       <div className="space-y-4 rounded-xl border border-dashed border-border bg-surface-subtle p-6 text-center">
-        <div className="text-3xl">✍️</div>
+        <div className="text-3xl">✍</div>
         <div className="space-y-1">
-          <p className="text-sm font-semibold text-text-main">日本語の振り返りを追加するとAIフィードバックを受けられます</p>
+          <p className="text-sm font-semibold text-text-main">일본어 문장을 추가하면 Feedback Agent를 사용할 수 있습니다.</p>
           <p className="text-sm text-text-sub">
-            まずは編集タブで日本語の文を入力するか、AI下書きを使って出発点を作ってください。
+            먼저 Edit 단계에서 일본어 문장을 적거나 AI 초안을 만든 뒤 다시 돌아오세요.
           </p>
         </div>
       </div>
@@ -43,16 +43,12 @@ export function JaCheckPanel({ log }: JaCheckPanelProps) {
   if (latestLoading) {
     return (
       <div className="flex items-center justify-center py-10">
-        <Spinner />
+        <Spinner size="md" variant="levels" />
       </div>
     )
   }
 
-  const feedback = latest?.issuesJson ?? (
-    runCheck.data
-      ? { overall: runCheck.data.overall, issues: runCheck.data.issues }
-      : null
-  )
+  const feedback = latest?.issuesJson ?? (runCheck.data ? { overall: runCheck.data.overall, issues: runCheck.data.issues } : null)
 
   return (
     <div className="space-y-6">
@@ -65,21 +61,19 @@ export function JaCheckPanel({ log }: JaCheckPanelProps) {
         </p>
       </div>
 
-      {/* Original text */}
       <div className="rounded-xl border border-border-subtle bg-surface-subtle p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled mb-2">
-          記録した日本語
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-disabled">
+          Original Sentence
         </p>
-        <p className="text-base text-text-main leading-relaxed whitespace-pre-wrap font-medium">
+        <p className="whitespace-pre-wrap text-base font-medium leading-relaxed text-text-main">
           {log.praiseJa}
         </p>
       </div>
 
-      {/* Run check button (when no feedback) */}
       {!feedback && (
-        <div className="text-center space-y-3 py-4">
+        <div className="space-y-3 py-4 text-center">
           <p className="text-sm text-text-soft">
-            AIコーチにフィードバックを依頼しましょう
+            Feedback Agent에게 현재 문장을 점검받아보세요.
           </p>
           {runCheck.error && <ErrorMessage error={runCheck.error} />}
           <Button
@@ -88,49 +82,45 @@ export function JaCheckPanel({ log }: JaCheckPanelProps) {
             size="lg"
             leftIcon={<span>🤖</span>}
           >
-            AIフィードバックを受ける
+            AI 피드백 받기
           </Button>
-          <p className="text-xs text-text-disabled">※ 1分あたり最大10回まで</p>
+          <p className="text-xs text-text-disabled">1분에 최대 10회까지 요청할 수 있습니다.</p>
         </div>
       )}
 
-      {/* Feedback display */}
       {feedback && (
         <div className="space-y-5 animate-slide-up">
-          {/* Overall score */}
           <div className="rounded-2xl border border-border-subtle bg-surface-elevated p-5">
             <div className="flex items-start gap-5">
               <ScoreBadge score={feedback.overall.score} size="lg" />
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <ScoreBar score={feedback.overall.score} />
-                <p className="mt-3 text-sm text-text-sub leading-relaxed">
+                <p className="mt-3 text-sm leading-relaxed text-text-sub">
                   {feedback.overall.comment}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
                   <span className="rounded-full bg-surface-muted px-3 py-1 text-text-sub">
-                    検出スタイル: {STYLE_LABEL[feedback.overall.detectedStyle] ?? feedback.overall.detectedStyle}
+                    검출 문체: {STYLE_LABEL[feedback.overall.detectedStyle] ?? feedback.overall.detectedStyle}
                   </span>
                   <span className="rounded-full bg-primary-50 px-3 py-1 text-primary-700">
-                    推奨: {STYLE_LABEL[feedback.overall.recommendedStyle] ?? feedback.overall.recommendedStyle}
+                    추천: {STYLE_LABEL[feedback.overall.recommendedStyle] ?? feedback.overall.recommendedStyle}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Next step question */}
-            <div className="mt-4 rounded-lg bg-primary-50 border border-primary-100 px-4 py-3">
-              <p className="text-xs font-semibold text-primary-700 mb-1">コーチからの質問</p>
-              <p className="text-sm text-primary-800 italic">
+            <div className="mt-4 rounded-lg border border-primary-100 bg-primary-50 px-4 py-3">
+              <p className="mb-1 text-xs font-semibold text-primary-700">Coach Question</p>
+              <p className="text-sm italic text-primary-800">
                 &ldquo;{feedback.overall.nextStepQuestion}&rdquo;
               </p>
             </div>
           </div>
 
-          {/* Issues */}
           {feedback.issues.length > 0 ? (
             <div>
-              <h3 className="text-sm font-semibold text-text-sub mb-3">
-                改善ポイント ({feedback.issues.length}件)
+              <h3 className="mb-3 text-sm font-semibold text-text-sub">
+                개선 포인트 ({feedback.issues.length}개)
               </h3>
               <div className="space-y-3">
                 {feedback.issues.map((issue, i) => (
@@ -139,12 +129,11 @@ export function JaCheckPanel({ log }: JaCheckPanelProps) {
               </div>
             </div>
           ) : (
-            <div className="rounded-xl bg-success-50 border border-success-200 px-4 py-4 text-center">
-              <p className="text-success-700 font-medium">🎉 問題は見つかりませんでした！</p>
+            <div className="rounded-xl border border-success-200 bg-success-50 px-4 py-4 text-center">
+              <p className="font-medium text-success-700">🎉 눈에 띄는 문제를 찾지 못했습니다.</p>
             </div>
           )}
 
-          {/* Re-check and Rewrite actions */}
           <div className="flex gap-3 pt-2">
             <Button
               variant="secondary"
@@ -152,7 +141,7 @@ export function JaCheckPanel({ log }: JaCheckPanelProps) {
               isLoading={runCheck.isPending}
               size="sm"
             >
-              再チェック
+              다시 점검하기
             </Button>
             {feedback.issues.length > 0 && (
               <Button
@@ -160,7 +149,7 @@ export function JaCheckPanel({ log }: JaCheckPanelProps) {
                 size="sm"
                 leftIcon={<span>✏️</span>}
               >
-                書き直す
+                Rewrite 열기
               </Button>
             )}
           </div>
@@ -169,7 +158,6 @@ export function JaCheckPanel({ log }: JaCheckPanelProps) {
         </div>
       )}
 
-      {/* Rewrite panel */}
       {showRewrite && (
         <RewritePanel
           log={log}
