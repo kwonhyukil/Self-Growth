@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start backend test MySQL
+        run: docker compose -f backend/docker-compose.yml up -d mysql
+
+      - name: Wait for MySQL
+        run: |
+          for i in {1..30}; do
+            if docker exec self-growth-mysql mysqladmin ping -h 127.0.0.1 -uroot -prootpassword --silent; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "MySQL did not become ready in time."
+          docker ps -a
+          exit 1
+
+      - name: Run backend tests
+        run: npm test
+
+      - name: Run frontend tests
+        run: npm run test --workspace @self-growth/web
+
+      - name: Run workspace build
+        run: npm run build
