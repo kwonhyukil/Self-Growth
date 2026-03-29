@@ -52,3 +52,6 @@ backend/src/
 docker compose -f backend/docker-compose.yml up -d mysql
 npm test
 ```
+
+- Tests use `backend/.env.test`.
+- `npm test` prepares `self_growth_log_test`, resets Prisma migrations, then runs Jest.

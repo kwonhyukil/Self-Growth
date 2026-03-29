@@ -1,4 +1,5 @@
 import { AppError } from "../errors/AppError";
+import { env } from "../config/env";
 
 type JsonSchema = Record<string, any>;
 
@@ -96,9 +97,8 @@ export async function callGptStructuredJson<T = any>(params: {
 }): Promise<T> {
   // const { model, prompt } = params;
 
-  const endpoint =
-    process.env.GPT_ENDPOINT || "https://api.openai.com/v1/responses";
-  const apiKey = process.env.GPT_API_KEY;
+  const endpoint = env.gptEndpoint;
+  const apiKey = env.gptApiKey;
 
   if (!apiKey) {
     throw new AppError(

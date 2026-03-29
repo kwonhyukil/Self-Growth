@@ -2,31 +2,53 @@ import { NextFunction, Response } from "express";
 import { AppError } from "../errors/AppError";
 import { AuthRequest } from "./auth.middleware";
 
-type Bucket = { windowStart: number; count: number };
-const buckets = new Map<number, Bucket>();
+type Bucket = { windowStart: number; count: number; windowMs: number };
+const buckets = new Map<string, Bucket>();
+
+function buildBucketKey(
+  req: AuthRequest,
+  userId: number,
+  customKey?: string,
+) {
+  if (customKey) return `${userId}:${customKey}`;
+
+  const routePath =
+    typeof req.route?.path === "string" ? req.route.path : req.path;
+
+  return `${userId}:${req.method}:${req.baseUrl}${routePath}`;
+}
 
 // Purge expired buckets every 5 minutes to prevent unbounded memory growth.
 setInterval(() => {
   const now = Date.now();
-  for (const [userId, bucket] of buckets) {
-    if (now - bucket.windowStart >= 60_000) {
-      buckets.delete(userId);
+  for (const [bucketKey, bucket] of buckets) {
+    if (now - bucket.windowStart >= bucket.windowMs) {
+      buckets.delete(bucketKey);
     }
   }
 }, 5 * 60_000).unref();
 
-export function rateLimitPerUser(options: { limit: number; windowMs: number }) {
-  const { limit, windowMs } = options;
+export function __resetRateLimitBucketsForTests() {
+  buckets.clear();
+}
+
+export function rateLimitPerUser(options: {
+  limit: number;
+  windowMs: number;
+  key?: string;
+}) {
+  const { limit, windowMs, key } = options;
 
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     const userId = req.userId;
     if (!userId) return next();
 
     const now = Date.now();
-    const b = buckets.get(userId);
+    const bucketKey = buildBucketKey(req, userId, key);
+    const b = buckets.get(bucketKey);
 
     if (!b || now - b.windowStart >= windowMs) {
-      buckets.set(userId, { windowStart: now, count: 1 });
+      buckets.set(bucketKey, { windowStart: now, count: 1, windowMs });
       return next();
     }
 

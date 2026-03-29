@@ -1,6 +1,7 @@
 import { prisma } from "../../../shared/infra/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { callGptStructuredJson } from "../../../shared/infra/gpt";
+import { env } from "../../../shared/config/env";
 
 interface ChatAgentModelResult {
   reply: string;
@@ -83,10 +84,10 @@ ${summarizeLogs(recentLogs)}
 
 사용자 메시지:
 ${trimmed}
-`.trim();
+    `.trim();
 
     const result = await callGptStructuredJson<ChatAgentModelResult>({
-      model: process.env.GPT_MODEL ?? "gpt-4o-mini",
+      model: env.gptModel,
       prompt,
       schemaName: "chat_agent_v1",
       schema: CHAT_SCHEMA,

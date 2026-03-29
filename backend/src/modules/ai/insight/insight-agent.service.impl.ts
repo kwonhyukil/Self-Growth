@@ -1,20 +1,6 @@
 import { prisma } from "../../../shared/infra/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { callGptStructuredJson } from "../../../shared/infra/gpt";
-interface JaImprovementStats {
-  days: number;
-  totalRevisions: number;
-  totalDeltaIssueCount: number;
-  avgDeltaIssueCount: number;
-  severityDistribution: { low: number; medium: number; high: number };
-  ruleTagTop: Array<{ ruleTag: string; count: number }>;
-  trend: Array<{
-    date: string;
-    deltaIssueCount: number;
-    revisions: number;
-    cumulativeDeltaIssueCount: number;
-  }>;
-}
 
 interface ProbingResult {
   probingQuestion: string;
@@ -47,53 +33,6 @@ const INSIGHT_SCHEMA = {
   required: ["aiInsightJa", "aiInsightKo", "verbalizationScore", "scoringReason"],
   additionalProperties: false,
 };
-
-function focusMessage(ruleTag: string) {
-  const map: Record<string, { message: string; action: string }> = {
-    particle: {
-      message: "조사 선택이 자주 흔들립니다. 문장 구조를 먼저 나눠 보면 정리하기 쉬워집니다.",
-      action: "주어/목적어 역할을 먼저 확인하고 조사 한 가지만 바꿔 보세요.",
-    },
-    naturalness: {
-      message: "어색한 표현이 반복됩니다. 더 자주 쓰는 말로 바꿔 보면 문장이 부드러워집니다.",
-      action: "어색했던 표현 1개만 골라 더 자연스러운 말로 바꿔 보세요.",
-    },
-    collocation: {
-      message: "단어 조합이 어색한 경우가 보입니다. 함께 자주 쓰는 표현을 익히는 게 좋습니다.",
-      action: "동사와 목적어 조합 1개를 더 자연스러운 조합으로 바꿔 보세요.",
-    },
-    kanji_kana: {
-      message: "한자/가나 표기가 흔들립니다. 표기를 통일하면 안정감이 높아집니다.",
-      action: "같은 단어의 표기를 한자 또는 가나 중 하나로 통일해 보세요.",
-    },
-    word_choice: {
-      message: "단어 선택이 자주 막힙니다. 더 익숙하고 기본적인 어휘부터 쓰는 게 좋습니다.",
-      action: "의미는 같지만 더 자주 쓰는 단어로 1개만 교체해 보세요.",
-    },
-    style_mix: {
-      message: "문체가 섞여 보입니다. 한 문장 안에서는 톤을 맞추는 편이 자연스럽습니다.",
-      action: "한 문장만 골라 반말 또는 정중체로 통일해 보세요.",
-    },
-    other: {
-      message: "전반적으로 더 구체적으로 쓰면 피드백 품질이 좋아집니다.",
-      action: "상대, 상황, 결과 중 2가지를 더 붙여 보세요.",
-    },
-  };
-  return map[ruleTag] ?? map.other;
-}
-
-function coachQuestion(ruleTag: string) {
-  const map: Record<string, string> = {
-    particle: "이 문장에서 주어와 목적어의 역할을 먼저 나눠 보면 어떨까요?",
-    naturalness: "어색했던 표현 하나만 골라 더 자주 쓰는 말로 바꿔볼까요?",
-    collocation: "동사와 목적어 조합 하나만 더 자연스럽게 바꿔볼까요?",
-    kanji_kana: "표기가 흔들리는 단어 하나만 골라 통일해볼까요?",
-    word_choice: "더 쉽고 자주 쓰는 단어로 바꿀 수 있는 부분이 있을까요?",
-    style_mix: "이 문장만이라도 한 문체로 통일해볼까요?",
-    other: "상황이나 결과를 한 문장 더 붙여서 구체화해볼까요?",
-  };
-  return map[ruleTag] ?? map.other;
-}
 
 export const insightAgentService = {
   async startVerbalizationSession(
@@ -242,64 +181,5 @@ ${probingAnswer}
     return prisma.verbalizationSession.findFirst({
       where: { logId, userId },
     });
-  },
-
-  buildDashboardInsight(d7: JaImprovementStats, d30: JaImprovementStats, qualityRows: Array<{ deltaIssueCount: number | null }>) {
-    const totalRevisions30d = qualityRows.length;
-    const nullDeltaCount30d = qualityRows.filter((r) => r.deltaIssueCount == null).length;
-    const zeroDeltaCount30d = qualityRows.filter((r) => r.deltaIssueCount === 0).length;
-
-    const weekTop1 = d7.ruleTagTop?.[0]?.ruleTag ?? null;
-    const monthTop1 = d30.ruleTagTop?.[0]?.ruleTag ?? null;
-    const monthTop2 = d30.ruleTagTop?.[1]?.ruleTag ?? null;
-
-    const weekRuleTag = weekTop1 ?? monthTop1 ?? "other";
-    let monthRuleTag = monthTop1 ?? "other";
-
-    if (monthRuleTag === weekRuleTag && monthTop2) {
-      monthRuleTag = monthTop2;
-    }
-
-    const weekFocus = focusMessage(weekRuleTag);
-    const monthFocus = focusMessage(monthRuleTag);
-
-    const nextTargets = (d30.ruleTagTop ?? [])
-      .map((x: { ruleTag: string }) => x.ruleTag)
-      .filter((tag: string) => tag !== weekRuleTag && tag !== monthRuleTag)
-      .slice(0, 2)
-      .map((tag: string) => ({
-        ruleTag: tag,
-        message: focusMessage(tag).message,
-      }));
-
-    return {
-      ja: { d7, d30 },
-      insights: {
-        weekTopFocus: { ruleTag: weekRuleTag, ...weekFocus },
-        monthTopFocus: { ruleTag: monthRuleTag, ...monthFocus },
-        nextTargets,
-      },
-      coach: {
-        week: {
-          focusRuleTag: weekRuleTag,
-          why: d7.ruleTagTop?.length
-            ? "최근 7일 기준으로 가장 자주 흔들린 항목입니다."
-            : "최근 7일 데이터가 부족해 30일 기준으로 추천합니다.",
-          oneAction: weekFocus.action,
-          nextQuestion: coachQuestion(weekRuleTag),
-        },
-        month: {
-          focusRuleTag: monthRuleTag,
-          why: "최근 30일 기준으로 가장 자주 흔들린 항목입니다.",
-          oneAction: monthFocus.action,
-          nextQuestion: coachQuestion(monthRuleTag),
-        },
-      },
-      dataQuality: {
-        totalRevisions30d,
-        nullDeltaCount30d,
-        zeroDeltaCount30d,
-      },
-    };
   },
 };

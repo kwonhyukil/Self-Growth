@@ -44,7 +44,7 @@ logsRouter.delete("/:id", authMiddleware, deleteLog);
 logsRouter.post(
   "/:id/check-ja",
   authMiddleware,
-  rateLimitPerUser({ limit: 10, windowMs: 60_000 }),
+  rateLimitPerUser({ limit: 10, windowMs: 60_000, key: "feedback:run" }),
   jaCheckController.checkJa,
 );
 logsRouter.get(
@@ -80,7 +80,7 @@ logsRouter.post(
 logsRouter.post(
   "/:id/draft-ja",
   authMiddleware,
-  rateLimitPerUser({ limit: 5, windowMs: 60_000 }),
+  rateLimitPerUser({ limit: 5, windowMs: 60_000, key: "logs:draft-ja" }),
   draftJa,
 );
 
@@ -93,14 +93,14 @@ logsRouter.get(
 logsRouter.post(
   "/:id/verbalize/brainstorm",
   authMiddleware,
-  rateLimitPerUser({ limit: 5, windowMs: 60_000 }),
+  rateLimitPerUser({ limit: 5, windowMs: 60_000, key: "insight:brainstorm" }),
   validateBody(brainstormSchema),
   verbalizationController.startBrainstorm,
 );
 logsRouter.post(
   "/:id/verbalize/probe-answer",
   authMiddleware,
-  rateLimitPerUser({ limit: 5, windowMs: 60_000 }),
+  rateLimitPerUser({ limit: 5, windowMs: 60_000, key: "insight:answer" }),
   validateBody(probeAnswerSchema),
   verbalizationController.submitAnswer,
 );

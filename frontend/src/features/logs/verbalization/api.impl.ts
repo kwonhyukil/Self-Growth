@@ -4,7 +4,7 @@ import type { BrainstormResult, InsightResult, VerbalizationSession } from '@/ty
 export const verbalizationApi = {
   getSession: async (logId: number): Promise<VerbalizationSession | null> => {
     const res = await api.get<{ data: { verbalization: VerbalizationSession | null } }>(
-      `/ai/insight/logs/${logId}/session`
+      `/logs/${logId}/verbalize`
     )
     return res.data.data.verbalization
   },
@@ -15,7 +15,7 @@ export const verbalizationApi = {
     thinkingDurationMs?: number
   ): Promise<BrainstormResult> => {
     const res = await api.post<{ data: { verbalization: BrainstormResult } }>(
-      `/ai/insight/logs/${logId}/brainstorm`,
+      `/logs/${logId}/verbalize/brainstorm`,
       { rawThoughts, thinkingDurationMs }
     )
     return res.data.data.verbalization
@@ -26,7 +26,7 @@ export const verbalizationApi = {
     probingAnswer: string
   ): Promise<InsightResult> => {
     const res = await api.post<{ data: { verbalization: InsightResult } }>(
-      `/ai/insight/logs/${logId}/answer`,
+      `/logs/${logId}/verbalize/probe-answer`,
       { probingAnswer }
     )
     return res.data.data.verbalization

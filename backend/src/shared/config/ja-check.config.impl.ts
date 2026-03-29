@@ -1,6 +1,8 @@
+import { env } from "./env";
+
 export const JA_CHECK = {
   PROMPT_VERSION: "v1",
-  MODEL: process.env.GPT_MODEL ?? "gpt-4.1-mini",
+  MODEL: env.gptModel,
 
   MIN_LEN: 20,
   MAX_LEN: 200,

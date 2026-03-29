@@ -26,8 +26,9 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "prisma:test:reset": "cross-env DOTENV_CONFIG_PATH=.env.test npx prisma migrate reset --force",
-    "test": "npm run prisma:test:reset && cross-env NODE_ENV=test DOTENV_CONFIG_PATH=.env.test npx jest --runInBand"
+    "test:db:prepare": "node scripts/ensure-test-db.cjs",
+    "prisma:test:reset": "node scripts/run-with-env.cjs .env.test npx prisma migrate reset --force --skip-generate",
+    "test": "npm run test:db:prepare && npm run prisma:test:reset && cross-env NODE_ENV=test node scripts/run-with-env.cjs .env.test npx jest --runInBand"
   },
   "keywords": [],
   "author": "",

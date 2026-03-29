@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-
-const JWT_SECRET = process.env.JWT_SECRET ?? "dev_secret_change_later";
+import { env } from "../config/env";
 
 export interface AuthRequest extends Request {
   userId?: number;
@@ -26,7 +25,7 @@ export function authMiddleware(
   const token = authHeader.replace("Bearer ", "");
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as { userId: number };
+    const payload = jwt.verify(token, env.jwtSecret) as { userId: number };
     req.userId = payload.userId;
     next();
   } catch {

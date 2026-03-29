@@ -3,6 +3,7 @@ import { prisma } from "../../shared/infra/prisma";
 import { CreateLogBody, UpdateLogBody } from "./logs.schema";
 import { callGptStructuredJson } from "../../shared/infra/gpt";
 import { growthService } from "../stats/growth/growth.service";
+import { env } from "../../shared/config/env";
 
 function scheduleAutoJaCheck(logId: number, userId: number) {
   setImmediate(async () => {
@@ -177,7 +178,7 @@ export const logsService = {
     }
 
     const result = await callGptStructuredJson<{ draftJa: string }>({
-      model: process.env.GPT_MODEL ?? "gpt-4.1-mini",
+      model: env.gptModel,
       prompt: [
         "Translate the following Korean self-praise text into natural Japanese.",
         "Use a consistent style and keep the result between 20 and 200 characters.",
