@@ -7,6 +7,8 @@ import type { User } from '@/types'
 interface AuthCtx {
   user: User | null
   isLoading: boolean
+  isAuthenticated: boolean
+  status: 'loading' | 'authenticated' | 'anonymous'
   login: (email: string, password: string) => Promise<void>
   signup: (email: string, password: string, name: string) => Promise<void>
   logout: () => void
@@ -18,6 +20,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const qc = useQueryClient()
+  const isAuthenticated = user !== null
+  const status = isLoading ? 'loading' : isAuthenticated ? 'authenticated' : 'anonymous'
 
   useEffect(() => {
     const token = getToken()
@@ -57,7 +61,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, signup, logout }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, isAuthenticated, status, login, signup, logout }}
+    >
       {children}
     </AuthContext.Provider>
   )
