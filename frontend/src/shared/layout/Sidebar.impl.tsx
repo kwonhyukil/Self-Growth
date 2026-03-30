@@ -1,12 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { clsx } from 'clsx'
-import { LayoutDashboard, BookOpen, BarChart2, type LucideIcon } from 'lucide-react'
-
-const links: { to: string; label: string; sub: string; Icon: LucideIcon }[] = [
-  { to: '/', label: 'Dashboard', sub: 'AI workspace', Icon: LayoutDashboard },
-  { to: '/logs', label: 'Logs', sub: 'Journal archive', Icon: BookOpen },
-  { to: '/stats', label: 'Stats', sub: 'Growth signals', Icon: BarChart2 },
-]
+import { navLinks } from './nav'
 
 export function Sidebar() {
   return (
@@ -26,7 +20,7 @@ export function Sidebar() {
       </div>
 
       <nav className="mt-6 flex-1 space-y-2">
-        {links.map(({ to, label, sub, Icon }) => (
+        {navLinks.map(({ to, label, sub, Icon }) => (
           <NavLink
             key={to}
             to={to}
